@@ -35,7 +35,17 @@ pip install jupyter_contrib_nbextensions
 </pre>
 
 
-#### Jupyter Themes I've Found Helpful
+### Starting the Notebook Server
+
+To start a Jupyter Notebook server, with the working directory set to
+the one containing the ".ipynb" file, run the command
+
+<pre>
+jupyter notebook &
+</pre>
+
+
+## Jupyter Themes I've Found Helpful
 
 These are some Jupyter Themes properties I've found helpful:
 
