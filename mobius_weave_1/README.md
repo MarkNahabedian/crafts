@@ -18,3 +18,4 @@ through a Google search:
 
 * Kim Winter also used a wire frame for [her loop](https://flextiles.wordpress.com/2020/07/14/coiled-mobius-strips/).
 
+* The approach I took is perhaps closest to that of [Harma Pieniing](http://www.piening.nl/)
