@@ -1,6 +1,6 @@
 # Trapezoidal Lap Joint
 
-![photo of assembled joint](photos/cross.svg)
+![photo of assembled joint](photos/cross.jpg)
 
 I wanted to make a portable Moravian workbench but didn't want to use
 the wedged tennon joints that appear in most of the examples.  I was
