@@ -16,6 +16,8 @@ Note the wedges on the sides (marked with a black circle in the photo)
 that will engage with the slanted walls of the joint.  The wedges are
 cut at the same angle as the sides of the trapezoidal cutout.
 
+![photo of assembled joint](photos/disassembled.jpg)
+
 Before the wedges are installed, the joint is screwed together with
 some fender washers in between the two "struts" to act as spacers.
 The legs are squared up to each other and the nut and bolt tightened,
