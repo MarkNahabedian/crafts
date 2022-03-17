@@ -1,0 +1,9 @@
+https://marknahabedian.github.io/crafts/index.html
+https://marknahabedian.github.io/crafts/mobius_weave_1/moebius_weaving.html
+https://marknahabedian.github.io/crafts/TrapezoidalLapJoint/README.html
+https://marknahabedian.github.io/crafts/TrapezoidalLapJoint/drawings/assembled_joint.svg
+https://marknahabedian.github.io/crafts/TrapezoidalLapJoint/drawings/joint_exploded.svg
+https://marknahabedian.github.io/crafts/TrapezoidalLapJoint/drawings/strut_four_view_from_OnShape.svg
+https://marknahabedian.github.io/crafts/TrapezoidalLapJoint/photos/cross.jpg
+https://marknahabedian.github.io/crafts/TrapezoidalLapJoint/photos/crotch.jpg
+https://marknahabedian.github.io/crafts/TrapezoidalLapJoint/photos/disassembled.jpg
