@@ -1,5 +1,6 @@
 https://marknahabedian.github.io/crafts/index.html
 https://marknahabedian.github.io/crafts/mobius_weave_1/moebius_weaving.html
+https://marknahabedian.github.io/crafts/tensegrity/tensegrity.html
 https://marknahabedian.github.io/crafts/TrapezoidalLapJoint/README.html
 https://marknahabedian.github.io/crafts/TrapezoidalLapJoint/drawings/assembled_joint.svg
 https://marknahabedian.github.io/crafts/TrapezoidalLapJoint/drawings/joint_exploded.svg
