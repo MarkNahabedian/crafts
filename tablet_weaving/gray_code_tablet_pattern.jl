@@ -15,6 +15,11 @@ md"""
 # Gray Code Tablet Weaving Pattern
 """
 
+# ╔═╡ 590963b9-bd0f-4c32-a778-873d22ec9c0f
+md"""
+## Gray Code
+"""
+
 # ╔═╡ a3b3c00d-425d-4437-b964-50946b7e75b3
 graycode(x) = xor(x, x >>> 1)
 
@@ -31,6 +36,15 @@ size(hcat(gray_sequence...))
 map(hcat(gray_sequence...)) do bit
 	COLORS[bit + 1]
 end
+
+# ╔═╡ fa0380d3-78b0-406c-8c38-182c22877591
+md"""
+## Tablets
+
+Looking at the front of a "tablet" card, the holes are labeled **A**, **B**, **C**, and **D** clockwise.  this means that when the frone of the card is facing to the weaver's right, and the card rotated **forward** (the top front corner becone the top back corner), the card is rotated clockwise (if facing its front).  The thread that was in the top front hole befoe the stitch is brought across the weft thjread from left to right for the stitch.
+
+If the card orientation / hole order was **A**, **B**, **C**, **D** before rotating forward/clockwise (for ae **Z** threaded card) it becomes **D**, **A**, **B**, **C** after.
+"""
 
 # ╔═╡ 0fea18b7-b40e-4ca5-95e5-744e619ea14a
 @kwdef mutable struct Tablet{T}
@@ -58,7 +72,7 @@ end
 # ╔═╡ 50e521b5-c4f7-464d-b6dd-5c7f9d5b4bd0
 """
     rotate!(::Tablet, ::AbstractDirection)
-Rotatethe tablet by one position in the specified direction.
+Rotate the tablet by one position in the specified direction.
 """
 function rotate! end
 
@@ -108,7 +122,7 @@ threads0(t::Tablet) = [t.a, t.b, t.c, t.d]
 # ╔═╡ 10388ccf-6c52-4113-b34d-e5a54ebec2a7
 """
     threads(::Tablet)
-Return the threads of the tabloet as rotated
+Return the threads of the tablet as rotated.
 """
 function threads(t::Tablet)
 	ts = threads0(t)
@@ -144,8 +158,59 @@ tablets = [Tablet(; id = i, a=COLORS[3], b=COLORS[3], c=COLORS[2], d=COLORS[2],
 	for i in 1:8
 ]
 
+# ╔═╡ 8b7572b3-203c-4063-8787-c8a4a23f2a61
+md"""
+
+"""
+
 # ╔═╡ 3c43dd0f-d8d4-460b-a8da-64b3831f6873
 map(threads, tablets)
+
+# ╔═╡ 418c2904-d16a-4c2d-a02f-c069918dca4c
+md"""
+## Stitches
+
+How do we render stitches so we can see how our pattern might come out.
+"""
+
+# ╔═╡ abacffda-7c76-46cc-8e3c-e305a81b5702
+function stitch_image(length, width, direction::Int)
+	@assert abs(direction) == 1
+	stitch = zeros(Bool, length, width)
+	slope = direction * (length) / (width)
+	yIntercept = if direction == 1 0 else length end
+	for l in 1 : length
+		w = Int(round((l - yIntercept) / slope))
+		if w < 1 w = 1 end
+		if w > width w=width end
+		stitch[l, w] = 1
+	end
+	for w in 1 : width
+		l = Int(round(slope * w + yIntercept))
+		if l < 1 l = 1 end
+		if l > length l = length end
+		stitch[l, w] = 1
+	end
+	stitch
+end
+
+# ╔═╡ 4ace6327-de0b-43fa-9b42-33661152de49
+[ stitch_image(8, 4, 1), stitch_image(8, 4, -1) ]
+
+# ╔═╡ 326c169a-2386-4e5d-97eb-3f6b6f691b9f
+color_stitch(stitch::Matrix{Bool}, foreground::Color, background::Color) =
+	map(stitch) do bit
+		if bit
+			foreground
+		else
+			background
+		end
+	end
+
+# ╔═╡ 4853d329-c7e4-4a98-b057-4192513b0220
+map([ stitch_image(8, 4, 1), stitch_image(8, 4, -1) ]) do i
+	color_stitch(i, RGB(0, 0, 1), RGB(0, 1, 0))
+	end
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -230,11 +295,13 @@ uuid = "8e850b90-86db-534c-a0d3-1478176c7d93"
 # ╔═╡ Cell order:
 # ╟─89e97690-18a6-11ed-15e4-4bb0cd5b7c50
 # ╠═9c0b434e-571c-4181-9350-848d50ba42e9
+# ╟─590963b9-bd0f-4c32-a778-873d22ec9c0f
 # ╠═a3b3c00d-425d-4437-b964-50946b7e75b3
 # ╠═e147b976-9227-4d54-8b14-f05d8eb0d42e
 # ╠═fcb7d96f-f2ce-44cb-ac86-3ef6a6195bf4
 # ╠═b04d2b69-aa8a-4174-8ef8-3e6b797354e7
 # ╠═c2b1f51e-77fb-4e23-94cc-699c124b81c3
+# ╟─fa0380d3-78b0-406c-8c38-182c22877591
 # ╠═0fea18b7-b40e-4ca5-95e5-744e619ea14a
 # ╠═86033a92-cd04-4c52-845d-89a8a473506c
 # ╠═bb8a5f20-62af-4f28-b0df-85af57beb8f3
@@ -248,6 +315,12 @@ uuid = "8e850b90-86db-534c-a0d3-1478176c7d93"
 # ╟─ea0b660e-9512-4ad1-b99a-e17753f47d74
 # ╟─776e4a65-62f7-4201-b8e5-6d5326e653fa
 # ╠═98bb29dc-55e7-4f42-8456-d72079801a3a
+# ╠═8b7572b3-203c-4063-8787-c8a4a23f2a61
 # ╠═3c43dd0f-d8d4-460b-a8da-64b3831f6873
+# ╟─418c2904-d16a-4c2d-a02f-c069918dca4c
+# ╠═abacffda-7c76-46cc-8e3c-e305a81b5702
+# ╠═4ace6327-de0b-43fa-9b42-33661152de49
+# ╠═326c169a-2386-4e5d-97eb-3f6b6f691b9f
+# ╠═4853d329-c7e4-4a98-b057-4192513b0220
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
