@@ -222,6 +222,16 @@ md"""
 # ╔═╡ 3c43dd0f-d8d4-460b-a8da-64b3831f6873
 map(threads, tablets)
 
+# ╔═╡ 7edb81bb-3909-4e57-9028-60508b560509
+let
+	tablet = Tablet(a=Gray(0.2), b=Gray(0.4), c=Gray(0.6), d=Gray(0.8))
+	# We expect the colors to be A, D, B, C
+	map(0:7) do rot
+		tablet.accumulated_rotation = rot
+		threads(tablet)[1]
+	end
+end
+
 # ╔═╡ 418c2904-d16a-4c2d-a02f-c069918dca4c
 md"""
 ## Stitches
@@ -328,24 +338,23 @@ function make_chevron_tablets()
 end
 
 # ╔═╡ 716bb7f6-d341-4828-8e31-8b135f7c016a
-let
+function forward(tablets, count::Int)
 	# Try continuous forward rotation
-	chevron_tablets = make_chevron_tablets()
 	tapestry = []
 	rotations = []
-	for row in 1:16
+	for row in 1 : count
 		push!(rotations,
-			transpose(map(chevron_tablets) do t
+			transpose(map(tablets) do t
 				t.accumulated_rotation
 			end)
 		)
 		# Form the new shed:
-		map(chevron_tablets) do t
+		map(tablets) do t
 			rotate!(t, Forward())
 		end
 		# Throw the weft:
 		push!(tapestry,
-			map(chevron_tablets) do t
+			map(tablets) do t
 				top, bottom, angle = shot!(t)
 				color_stitch(stitch_image(4, 3, angle),
 					top, Gray(0.25))
@@ -355,6 +364,53 @@ let
 			hcat(row...)
 	end...) # , rotations
 end
+
+# ╔═╡ 296a64b9-7f7b-4ae2-adad-640be4879e7f
+forward(make_chevron_tablets(), 16)
+
+# ╔═╡ eef97e76-284b-456f-9ad8-9b86d87d6954
+# Lets try a different pottern, from http://research.fibergeek.com/2002/10/10/first-tablet-weaving-double-diamonds/
+function make_diamond_tablets()
+	f = Gray(0.2)
+	b = Gray(0.8)
+	id = 0
+	function tab(a, b, c, d, sz)
+		id += 1
+		Tablet{Color}(id, a, b, c, d, sz, 0, 0)
+	end
+	[
+		# Border:
+		tab(b, b, b, b, :z),   #  1
+		tab(b, b, b, b, :z),   #  2
+		tab(f, f, f, f, :z),   #  3
+		# Pattern:
+		tab(b, f, f, b, :s),   #  4
+		tab(f, f, b, b, :s),   #  5
+		tab(f, b, b, f, :s),   #  6
+		tab(b, b, f, f, :s),   #  7
+		tab(b, f, f, b, :s),   #  8
+		tab(f, f, b, b, :s),   #  9
+		tab(f, b, b, f, :s),   # 10
+		tab(b, b, f, f, :s),   # 11
+		# Reverse:
+		tab(b, b, f, f, :z),   # 12
+		tab(f, b, b, f, :z),   # 13
+		tab(f, f, b, b, :z),   # 14
+		tab(b, f, f, b, :z),   # 15
+		tab(b, b, f, f, :z),   # 16
+		tab(f, b, b, f, :z),   # 17
+		tab(f, f, b, b, :z),   # 18
+		tab(b, f, f, b, :z),   # 19
+		# Enough!
+		# border
+		tab(f, f, f, f, :s),   # 20
+		tab(b, b, b, b, :s),   # 21
+		tab(b, b, b, b, :s)	# 22
+	]
+end
+
+# ╔═╡ 93497aa8-ba19-45fe-a596-dd5ef194229f
+forward(make_diamond_tablets(), 16)
 
 # ╔═╡ 910c1e57-f7f0-4cb9-aa6c-826ff71e7b3a
 md"""
@@ -479,7 +535,8 @@ uuid = "8e850b90-86db-534c-a0d3-1478176c7d93"
 # ╠═98bb29dc-55e7-4f42-8456-d72079801a3a
 # ╠═8b7572b3-203c-4063-8787-c8a4a23f2a61
 # ╠═3c43dd0f-d8d4-460b-a8da-64b3831f6873
-# ╟─418c2904-d16a-4c2d-a02f-c069918dca4c
+# ╠═7edb81bb-3909-4e57-9028-60508b560509
+# ╠═418c2904-d16a-4c2d-a02f-c069918dca4c
 # ╠═abacffda-7c76-46cc-8e3c-e305a81b5702
 # ╠═ca9cae4a-f74b-46e7-9a24-fc8df3958a0f
 # ╠═4ace6327-de0b-43fa-9b42-33661152de49
@@ -488,6 +545,9 @@ uuid = "8e850b90-86db-534c-a0d3-1478176c7d93"
 # ╟─8aa9c975-ff50-4db0-9939-7fee0cada96a
 # ╠═c3d99a5c-9c4c-4aff-b932-2dcc45a392ce
 # ╠═716bb7f6-d341-4828-8e31-8b135f7c016a
+# ╠═296a64b9-7f7b-4ae2-adad-640be4879e7f
+# ╠═eef97e76-284b-456f-9ad8-9b86d87d6954
+# ╠═93497aa8-ba19-45fe-a596-dd5ef194229f
 # ╟─910c1e57-f7f0-4cb9-aa6c-826ff71e7b3a
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
