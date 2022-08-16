@@ -6,9 +6,10 @@ using InteractiveUtils
 
 # ╔═╡ 9c0b434e-571c-4181-9350-848d50ba42e9
 begin
-	using Base: kwdef
+	using Base: @kwdef
 	using Colors
 	using Markdown
+	using Hyperscript
 end
 
 # ╔═╡ 89e97690-18a6-11ed-15e4-4bb0cd5b7c50
@@ -232,6 +233,57 @@ let
 	end
 end
 
+# ╔═╡ c6a06609-bf84-45cb-a837-68760b826cb3
+md"""
+### Tablet Charts
+"""
+
+# ╔═╡ a24eae67-f116-4c75-8fda-b942dab326c7
+"""
+    csscolor(color)
+return (as a string) the CSS representation of the color.
+"""
+function csscolor end
+
+# ╔═╡ 3c10060e-f2e1-4a05-8322-65009f5ef14e
+begin
+	function csscolor(color::RGB)
+		css(x) = Int(round(x * 255))
+		"rgb($(css(color.r)), $(css(color.g)), $(css(color.b)))"
+	end
+	# Gray .val
+end
+
+# ╔═╡ c4804cf2-85ba-4895-8404-47560df04e2f
+function chart_tablet(tablet::Tablet)
+	@assert tablet.accumulated_rotation == 0
+	@assert tablet.this_shot_rotation == 0
+	grid_style =
+		"display: inline-grid; " *
+		"grid-template-columns: 1; " *
+		"grid-template-rows: 1fr 1fr 1fr 1fr 1fr; "
+	result = m("div", style=grid_style,
+		m("span", style="background: $(csscolor(tablet.a));"),
+		m("span", style="background: $(csscolor(tablet.b));"),
+		m("span", style="background: $(csscolor(tablet.c));"),
+		m("span", style="background: $(csscolor(tablet.d));"),
+		m("span", tablet.sz == :z ? "/" : "\\"))
+	result
+end
+
+# ╔═╡ fd40ecf7-83cb-43b5-b87c-8273f8fd32c4
+string(chart_tablet(Tablet{Color}(;
+	a=RGB(1, 0, 0),
+	b=RGB(0, 1, 0),
+	c=RGB(0, 0,1),
+	d=RGB(0.5, 0.5, 0.5),
+	sz=:s)))
+
+# ╔═╡ 22c96c85-2344-46bc-a64c-460414575677
+function chart_tablets(tablets::Vector{Tablet})
+
+end
+
 # ╔═╡ 418c2904-d16a-4c2d-a02f-c069918dca4c
 md"""
 ## Stitches
@@ -337,6 +389,9 @@ function make_chevron_tablets()
 	]
 end
 
+# ╔═╡ c4ab1370-cc66-4b54-901f-1c2680c01bf7
+make_chevron_tablets()
+
 # ╔═╡ 716bb7f6-d341-4828-8e31-8b135f7c016a
 function forward(tablets, count::Int)
 	# Try continuous forward rotation
@@ -425,10 +480,12 @@ How do we execute that "plan" to produce a stitch image to see how the pattern t
 PLUTO_PROJECT_TOML_CONTENTS = """
 [deps]
 Colors = "5ae59095-9a9b-59fe-a467-6f913c188581"
+Hyperscript = "47d2ed2b-36de-50cf-bf87-49c2cf4b8b91"
 Markdown = "d6f4376e-aef5-505a-96c1-9c027394607a"
 
 [compat]
 Colors = "~0.12.8"
+Hyperscript = "~0.0.4"
 """
 
 # ╔═╡ 00000000-0000-0000-0000-000000000002
@@ -466,12 +523,25 @@ git-tree-sha1 = "335bfdceacc84c5cdf16aadc768aa5ddfc5383cc"
 uuid = "53c48c17-4a7d-5ca2-90c5-79b7896eea93"
 version = "0.8.4"
 
+[[deps.Hyperscript]]
+deps = ["Test"]
+git-tree-sha1 = "8d511d5b81240fc8e6802386302675bdf47737b9"
+uuid = "47d2ed2b-36de-50cf-bf87-49c2cf4b8b91"
+version = "0.0.4"
+
+[[deps.InteractiveUtils]]
+deps = ["Markdown"]
+uuid = "b77e0a4c-d291-57a0-90e8-8db25a27a240"
+
 [[deps.Libdl]]
 uuid = "8f399da3-3557-5675-b5ff-fb832c97cbdb"
 
 [[deps.LinearAlgebra]]
 deps = ["Libdl", "libblastrampoline_jll"]
 uuid = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
+
+[[deps.Logging]]
+uuid = "56ddb016-857b-54e1-b83d-db4d58db5568"
 
 [[deps.Markdown]]
 deps = ["Base64"]
@@ -503,6 +573,10 @@ uuid = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
 [[deps.Statistics]]
 deps = ["LinearAlgebra", "SparseArrays"]
 uuid = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
+
+[[deps.Test]]
+deps = ["InteractiveUtils", "Logging", "Random", "Serialization"]
+uuid = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [[deps.libblastrampoline_jll]]
 deps = ["Artifacts", "Libdl", "OpenBLAS_jll"]
@@ -536,6 +610,12 @@ uuid = "8e850b90-86db-534c-a0d3-1478176c7d93"
 # ╠═8b7572b3-203c-4063-8787-c8a4a23f2a61
 # ╠═3c43dd0f-d8d4-460b-a8da-64b3831f6873
 # ╠═7edb81bb-3909-4e57-9028-60508b560509
+# ╟─c6a06609-bf84-45cb-a837-68760b826cb3
+# ╟─a24eae67-f116-4c75-8fda-b942dab326c7
+# ╠═3c10060e-f2e1-4a05-8322-65009f5ef14e
+# ╠═c4804cf2-85ba-4895-8404-47560df04e2f
+# ╠═fd40ecf7-83cb-43b5-b87c-8273f8fd32c4
+# ╠═22c96c85-2344-46bc-a64c-460414575677
 # ╠═418c2904-d16a-4c2d-a02f-c069918dca4c
 # ╠═abacffda-7c76-46cc-8e3c-e305a81b5702
 # ╠═ca9cae4a-f74b-46e7-9a24-fc8df3958a0f
@@ -544,6 +624,7 @@ uuid = "8e850b90-86db-534c-a0d3-1478176c7d93"
 # ╠═4853d329-c7e4-4a98-b057-4192513b0220
 # ╟─8aa9c975-ff50-4db0-9939-7fee0cada96a
 # ╠═c3d99a5c-9c4c-4aff-b932-2dcc45a392ce
+# ╠═c4ab1370-cc66-4b54-901f-1c2680c01bf7
 # ╠═716bb7f6-d341-4828-8e31-8b135f7c016a
 # ╠═296a64b9-7f7b-4ae2-adad-640be4879e7f
 # ╠═eef97e76-284b-456f-9ad8-9b86d87d6954
