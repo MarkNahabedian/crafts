@@ -86,12 +86,12 @@ begin
     abstract type TabletThreading end
 
 	"""
-	Warp threads pass through the tablet from back to front.
+	Warp threads pass from the warp beam through the tablet from back to front.
 	"""
     struct BackToFront <: TabletThreading end
 
 	"""
-	Warp threads pass through the tablet from front to back.
+	Warp threads pass from the warp beam through the tablet from front to back.
 	"""
     struct FrontToBack <: TabletThreading end
 
@@ -672,7 +672,7 @@ function make_diamond_tablets()
 		# border
 		tab(f, f, f, f, s),   # 20
 		tab(b, b, b, b, s),   # 21
-		tab(b, b, b, b, s)	# 22
+		tab(b, b, b, b, s)	  # 22
 	]
 end
 
@@ -810,8 +810,8 @@ version = "5.1.1+0"
 # ╠═b04d2b69-aa8a-4174-8ef8-3e6b797354e7
 # ╠═c2b1f51e-77fb-4e23-94cc-699c124b81c3
 # ╟─1cf1cf59-d324-447a-8a72-b393c96b549f
-# ╟─68c32382-4511-4345-a523-d9854b91e754
-# ╟─786f8502-a081-4baf-b82d-a936cdfaae5e
+# ╠═68c32382-4511-4345-a523-d9854b91e754
+# ╠═786f8502-a081-4baf-b82d-a936cdfaae5e
 # ╠═b12c2fe2-a32e-4e6f-a7d7-cfc24e8cb00c
 # ╠═0fea18b7-b40e-4ca5-95e5-744e619ea14a
 # ╟─56453fbd-6f6a-4c11-b2ba-acae84b66f48
@@ -822,8 +822,8 @@ version = "5.1.1+0"
 # ╟─b3ec1ee7-77d8-417a-834a-70c6c6608ae7
 # ╟─748199f2-e5d8-4272-9120-f8b50264b5d6
 # ╟─e31dd514-64af-4491-aac2-b47a85372650
-# ╟─b38913ac-f91f-4e6d-a95a-506b8d3c754c
-# ╟─8eea1d46-ca5b-48d4-9829-bce769dfcfbb
+# ╠═b38913ac-f91f-4e6d-a95a-506b8d3c754c
+# ╠═8eea1d46-ca5b-48d4-9829-bce769dfcfbb
 # ╟─f3a1f857-0d6c-4f29-8095-4c6f189b3604
 # ╟─82725eaa-1605-4471-a808-360d0693dd43
 # ╟─71e0104b-beb4-4e3e-8def-218f88fdfbcd
