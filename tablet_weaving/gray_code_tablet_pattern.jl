@@ -679,13 +679,28 @@ end
 # ╔═╡ 93497aa8-ba19-45fe-a596-dd5ef194229f
 tablet_weave(make_diamond_tablets(), Forward(), 16)
 
+# ╔═╡ ee85e6c6-2ade-4178-8850-55e776916ac1
+md"""
+## How to Describe Tablet Motion During Weaving
+
+After each throw, each tablet must be rotated **forward** or **backward** to make a new shed.  In the simplest patterns, all tablets are rotated in the same direction.  For our gray code pattern however, tablets move in different directions for each shed.  How can we represent these rotations for ease of execution by the weaver.
+
+There is one set of tablet motions for each throw of the shuttle.  We should have a row number.  The weaver muust keep track of which row they're working.
+
+There is motion for each tablet.  The motion of a single tablet can be concisely described by unicode arrows () or by the edge number of the tablet that is facing the shed.  The latter is less error prone since an incorrect starting position for a tablet will be detected.
+
+The simplest representation is a `Vector` for for the whole pattern each throw.  Each element would be a `Vector` of digits rfom `1` to `4` indicating the edge of the tablet that's at the back of the shed.
+"""
+
 # ╔═╡ 910c1e57-f7f0-4cb9-aa6c-826ff71e7b3a
 md"""
 ## Generating a Pattern
 
-We have an array of the "image" we want to weave.  How do we translate that into a set of tablets and their motions?
+We have an array of the "image" we want to weave.  How do we translate that into a set of tablets, their warping, and their motions?
 
 How do we execute that "plan" to produce a stitch image to see how the pattern turned out.
+
+For a two color pattern, we can warp each tablet with one color in holes **A** and **C** and the other in holes **B** and **D**.  Whatever the previous stitch, the tablet can be rotated to either color.  The slant of the stitch can't be controlled though.
 """
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
@@ -861,6 +876,7 @@ version = "5.1.1+0"
 # ╠═296a64b9-7f7b-4ae2-adad-640be4879e7f
 # ╠═eef97e76-284b-456f-9ad8-9b86d87d6954
 # ╠═93497aa8-ba19-45fe-a596-dd5ef194229f
+# ╟─ee85e6c6-2ade-4178-8850-55e776916ac1
 # ╟─910c1e57-f7f0-4cb9-aa6c-826ff71e7b3a
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
