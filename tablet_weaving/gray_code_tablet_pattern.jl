@@ -142,7 +142,7 @@ end
 # ╔═╡ 31bdd4ca-aa24-4600-9a72-36410636019b
 md"""
 We use a `Vector` of `Tablet`s to describe how the loom is set up for
-weaqving.  for convenience, we can add these vectors together for a
+weaving.  for convenience, we can add these vectors together for a
 wider pattern.  We can also multiply them to repeat tablets.
 """
 
