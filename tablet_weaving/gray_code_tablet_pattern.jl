@@ -217,6 +217,17 @@ GRAY_PATTERN = map(hcat(gray_sequence...)) do bit
 	COLORS[bit + 1]
 end
 
+# ╔═╡ 78e317ca-d347-45a9-9058-b2e7b187c843
+GRAY_WEAVE = let
+	# Reflect GRAY_PATTERN on both axes and add leading and trailing background:
+	pattern = GRAY_PATTERN
+	for _ in 1:4
+		pattern = hcat(pattern[:, 1], pattern)
+	end
+	bottom = hcat(pattern, reverse(pattern; dims=2))
+	vcat(reverse(bottom; dims=1), bottom)
+end
+
 # ╔═╡ 56453fbd-6f6a-4c11-b2ba-acae84b66f48
 md"""
 ### Tablet Rotation
@@ -981,6 +992,7 @@ version = "5.1.1+0"
 # ╠═fcb7d96f-f2ce-44cb-ac86-3ef6a6195bf4
 # ╠═b04d2b69-aa8a-4174-8ef8-3e6b797354e7
 # ╠═c2b1f51e-77fb-4e23-94cc-699c124b81c3
+# ╠═78e317ca-d347-45a9-9058-b2e7b187c843
 # ╟─1cf1cf59-d324-447a-8a72-b393c96b549f
 # ╟─68c32382-4511-4345-a523-d9854b91e754
 # ╠═786f8502-a081-4baf-b82d-a936cdfaae5e
