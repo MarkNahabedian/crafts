@@ -10,6 +10,7 @@ begin
 	using Colors
 	using Markdown
 	using Hyperscript
+	using OrderedCollections
 end
 
 # ╔═╡ 89e97690-18a6-11ed-15e4-4bb0cd5b7c50
@@ -182,7 +183,7 @@ begin
 end
 
 # ╔═╡ c2b1f51e-77fb-4e23-94cc-699c124b81c3
-map(hcat(gray_sequence...)) do bit
+GRAY_PATTERN = map(hcat(gray_sequence...)) do bit
 	COLORS[bit + 1]
 end
 
@@ -766,16 +767,53 @@ let
 	(2 * border1) + (2 * border2)
 end
 
+# ╔═╡ 6dc90672-f80e-4e2c-9689-7e777b03ff8d
+"""
+    tablets_for_image(image)
+Return a `Vector` of the `Tablet`s that could be used to weave the image, which should
+be a two dimensional array.  If the tablets can't be determined then an error is
+thrown.
+The shorter dimension of `image` will be the weft, the larger, the warp.
+The caller might need to adjust the threading of the tablets afterwards.
+"""
+function tablets_for_image(image)
+	@assert length(size(image)) == 2
+	cardcount = minimum(size(image))
+	throwcount = maximum(size(image))
+	if size(image)[1] < size(image)[2]
+		image = permutedims(image, [2, 1])
+	end
+	colors = [OrderedSet{Color}() for i in 1:cardcount]
+	for rownum in 1:throwcount
+		for cardnum in 1:cardcount
+			push!(colors[cardnum], image[rownum, cardnum])
+		end
+	end
+	@assert all(x -> x > 0 && x <= 2, map(length, colors))
+	map(colors) do c
+		if length(c) == 1
+			Tablet(a = c[1], b = c[1], c = c[1], d = c[1])
+		else
+			Tablet(a = c[1], b = c[2], c = c[1], d = c[2])
+		end
+	end
+end
+
+# ╔═╡ 4bd5b024-9be5-42f3-999b-6d9300003dd9
+tablets_for_image(GRAY_PATTERN)
+
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
 [deps]
 Colors = "5ae59095-9a9b-59fe-a467-6f913c188581"
 Hyperscript = "47d2ed2b-36de-50cf-bf87-49c2cf4b8b91"
 Markdown = "d6f4376e-aef5-505a-96c1-9c027394607a"
+OrderedCollections = "bac558e1-5e72-5ebc-8fee-abe8a469f55d"
 
 [compat]
 Colors = "~0.12.8"
 Hyperscript = "~0.0.4"
+OrderedCollections = "~1.4.1"
 """
 
 # ╔═╡ 00000000-0000-0000-0000-000000000002
@@ -784,7 +822,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.8.0"
 manifest_format = "2.0"
-project_hash = "3b17b08a33834fa2879b1a8ecb62b87fb0bf4120"
+project_hash = "bd0d9bf754f39afa9d34f190995e15e4e3f01656"
 
 [[deps.Artifacts]]
 uuid = "56f22d72-fd6d-98f1-02f0-08ddc0907c33"
@@ -843,6 +881,11 @@ uuid = "d6f4376e-aef5-505a-96c1-9c027394607a"
 deps = ["Artifacts", "CompilerSupportLibraries_jll", "Libdl"]
 uuid = "4536629a-c528-5b80-bd46-f80d51c5b363"
 version = "0.3.20+0"
+
+[[deps.OrderedCollections]]
+git-tree-sha1 = "85f8e6578bf1f9ee0d11e7bb1b1456435479d47c"
+uuid = "bac558e1-5e72-5ebc-8fee-abe8a469f55d"
+version = "1.4.1"
 
 [[deps.Random]]
 deps = ["SHA", "Serialization"]
@@ -944,5 +987,7 @@ version = "5.1.1+0"
 # ╟─ee85e6c6-2ade-4178-8850-55e776916ac1
 # ╟─910c1e57-f7f0-4cb9-aa6c-826ff71e7b3a
 # ╠═11ac0388-eadf-48c7-8ec9-2c4ce0f5169f
+# ╠═6dc90672-f80e-4e2c-9689-7e777b03ff8d
+# ╠═4bd5b024-9be5-42f3-999b-6d9300003dd9
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
