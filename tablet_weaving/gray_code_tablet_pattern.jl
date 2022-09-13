@@ -48,6 +48,10 @@ It has a hole on each of it's four corners.
 When looking at the front of the card, the holes are labeled **A**,
 **B**, **C**, and **D** clockwise.
 
+The edges of the card are numbered, with the edge from corner **A** to
+corner **B** numbered **1**.  The edge between **B** and **C** numbered **2**,
+and so on around the card.
+
 For weaving, one warp thread passes through each hole.
 
 The four warp threads for a tablet pass from the warp beam,
@@ -73,8 +77,19 @@ holes (and their warp threads) relative to the loom.
 
 # ╔═╡ 68c32382-4511-4345-a523-d9854b91e754
 md"""
+### Tablet Threading
+
 How the warp threads pass through a tablet, the `TabletThreading`, can either be
 `BackToFront` or `FrontToBack`.
+
+for `BackToFront` threading, warp threads pass from the warp beam through the
+tablet from back to front and then to the cloth beam.
+
+For `FrontToBack` threading, Warp threads pass from the warp beam through the
+tablet from front to back and then to the cloth beam.
+
+These threadings also have a concise textual representation.  `BackToFront` can
+be represented by `/`or `z`.  `BackToFront` can be represented by `\\` or `s`.
 """
 
 # ╔═╡ 786f8502-a081-4baf-b82d-a936cdfaae5e
@@ -107,6 +122,21 @@ begin
 	threading_char(::BackToFront) = '/'
 	threading_char(::BackToFront) = '\\'
 end
+
+# ╔═╡ 6d65f0b3-7370-4a7d-82bc-607f8b0f8c8c
+md"""
+### Tablet Stacking
+
+If the tablets are arranged with a flat side facing the weaver this would take too much spance and also cause other inconveniences.  Instead, tablets are arrahged so that their flat faces face each other.  This forms a horizontal stack from one side
+of the loom to the other.
+
+When stacked like this, a tablet is said to be stacked `FrontToTheRight` if it's
+front face faces towards the right side of the loom rom the weaver's perspective.
+A tablet facing the opposite direction is said to be threaded `FrontToTheLeft`.
+
+For brevity in textual representations, `FrontToTheRight` is represented with a 
+`→` right arrow and `FrontToTheLeft` with a `←` left arrow.
+"""
 
 # ╔═╡ b12c2fe2-a32e-4e6f-a7d7-cfc24e8cb00c
 begin
@@ -364,14 +394,19 @@ let
 	html"Forward and Backward rotate! assertions passed."
 end
 
+# ╔═╡ ede7b3b1-5ec6-4abe-95c2-72b68552695a
+md"""
+Each `Tablet` accumulates its total rotation in its `accumulated_rotation` field.  Given a tablet's current rotation, we sometimes need to know which warp thread is where or which edge of the card faces the shed.
+"""
+
 # ╔═╡ 9b217c54-ad77-4ce3-9715-cde19bed7bc4
 """
     threads0(::Tablet)
 return the threads of the unrotated Tablet in the order
-1. top corner cloest to cloth beam,
-2. top corner furthest from cloth beam,
-3. bottom corner further from cloth beam,
-4. bottom corner closest to cloth beam.
+1. top corner cloest to cloth beam -- hole **A**,
+2. top corner furthest from cloth beam -- hole **B**,
+3. bottom corner further from cloth beam -- hole **C**,
+4. bottom corner closest to cloth beam -- hole **D**.
 """
 function threads0(t::Tablet)
 	if isa(t.threading, BackToFront)
@@ -402,6 +437,22 @@ let
 	t.accumulated_rotation = 1
 	@assert threads(t) == [:D, :A, :B, :C]
 	html"threads() assertions passed."
+end
+
+# ╔═╡ 98151391-5799-4e96-b1c5-8098dd45b396
+"""
+   shed_edge(::Tablet)
+
+Return the edge number of the edge of the tablet that is facing the shed.
+"""
+function shed_edge(t::Tablet)
+	# Should we consider this_shot_rotation?
+	r = mod(t.accumulated_rotation , 4)
+	if r == 0 4
+	elseif r == 1 3
+	elseif r == 2 2
+	else 1
+	end
 end
 
 # ╔═╡ ea0b660e-9512-4ad1-b99a-e17753f47d74
@@ -931,8 +982,9 @@ version = "5.1.1+0"
 # ╠═b04d2b69-aa8a-4174-8ef8-3e6b797354e7
 # ╠═c2b1f51e-77fb-4e23-94cc-699c124b81c3
 # ╟─1cf1cf59-d324-447a-8a72-b393c96b549f
-# ╠═68c32382-4511-4345-a523-d9854b91e754
+# ╟─68c32382-4511-4345-a523-d9854b91e754
 # ╠═786f8502-a081-4baf-b82d-a936cdfaae5e
+# ╟─6d65f0b3-7370-4a7d-82bc-607f8b0f8c8c
 # ╠═b12c2fe2-a32e-4e6f-a7d7-cfc24e8cb00c
 # ╠═0fea18b7-b40e-4ca5-95e5-744e619ea14a
 # ╟─31bdd4ca-aa24-4600-9a72-36410636019b
@@ -955,9 +1007,11 @@ version = "5.1.1+0"
 # ╟─5498ffbc-40f9-44dd-9b6a-484e2498c406
 # ╟─6d796003-f336-44ed-8831-8ea2b56fe865
 # ╟─b396b71e-8510-4f7c-9017-50693b2f9c1d
-# ╟─9b217c54-ad77-4ce3-9715-cde19bed7bc4
+# ╟─ede7b3b1-5ec6-4abe-95c2-72b68552695a
+# ╠═9b217c54-ad77-4ce3-9715-cde19bed7bc4
 # ╟─10388ccf-6c52-4113-b34d-e5a54ebec2a7
 # ╟─e275a226-c404-4e8b-a9de-2b126da4b452
+# ╠═98151391-5799-4e96-b1c5-8098dd45b396
 # ╠═ea0b660e-9512-4ad1-b99a-e17753f47d74
 # ╟─776e4a65-62f7-4201-b8e5-6d5326e653fa
 # ╠═98bb29dc-55e7-4f42-8456-d72079801a3a
