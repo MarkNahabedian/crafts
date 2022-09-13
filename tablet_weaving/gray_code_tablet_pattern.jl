@@ -34,11 +34,6 @@ COLORS = [ RGB(1, 0, 0), RGB(0, 1, 0), RGB(0, 0, 1)]
 # ╔═╡ b04d2b69-aa8a-4174-8ef8-3e6b797354e7
 size(hcat(gray_sequence...))
 
-# ╔═╡ c2b1f51e-77fb-4e23-94cc-699c124b81c3
-map(hcat(gray_sequence...)) do bit
-	COLORS[bit + 1]
-end
-
 # ╔═╡ 1cf1cf59-d324-447a-8a72-b393c96b549f
 md"""
 ## Tablets
@@ -141,6 +136,54 @@ end
 	stacking::TabletStacking = FrontToTheRight()
 	accumulated_rotation::Int = 0
 	this_shot_rotation::Int = 0
+end
+
+# ╔═╡ 31bdd4ca-aa24-4600-9a72-36410636019b
+md"""
+We use a `Vector` of `Tablet`s to describe how the loom is set up for
+weaqving.  for convenience, we can add these vectors together for a
+wider pattern.  We can also multiply them to repeat tablets.
+"""
+
+# ╔═╡ bf12e28b-6bd1-45e3-9cea-e81d412c0097
+begin
+    function (Base.:+)(a::Tablet{T}, b::Tablet{T})::Vector{Tablet{T}} where T
+        [a, b]
+    end
+
+    function (Base.:+)(a::Tablet{T}, v::Vector{Tablet{T}})::Vector{Tablet{T}} where T
+        [a, v...]
+    end
+
+    function (Base.:+)(v::Vector{Tablet{T}}, b::Tablet{T})::Vector{Tablet{T}} where T
+	[v..., b]
+    end
+
+    function (Base.:+)(v1::Vector{Tablet{T}}, 
+                       v2::Vector{Tablet{T}})::Vector{Tablet{T}} where T
+		[v1..., v2...]
+    end
+
+    function (Base.:*)(repeat::Int, t::Tablet{T})::Vector{Tablet{T}} where T
+		result = Vector{Tablet{T}}()
+		for i in 1:repeat
+		    push!(result, t)
+		end
+		result
+    end
+
+    function (Base.:*)(repeat::Int, v::Vector{Tablet{T}})::Vector{Tablet{T}} where T
+		result = Vector{Tablet{T}}()
+		for i in 1:repeat
+		    append!(result, v)
+		end
+		result
+    end
+end
+
+# ╔═╡ c2b1f51e-77fb-4e23-94cc-699c124b81c3
+map(hcat(gray_sequence...)) do bit
+	COLORS[bit + 1]
 end
 
 # ╔═╡ 56453fbd-6f6a-4c11-b2ba-acae84b66f48
@@ -703,6 +746,26 @@ How do we execute that "plan" to produce a stitch image to see how the pattern t
 For a two color pattern, we can warp each tablet with one color in holes **A** and **C** and the other in holes **B** and **D**.  Whatever the previous stitch, the tablet can be rotated to either color.  The slant of the stitch can't be controlled though.
 """
 
+# ╔═╡ 11ac0388-eadf-48c7-8ec9-2c4ce0f5169f
+let
+	border_color =RGB(0.5, 0.5, 0.5)
+	color1 = RGB(1, 0, 0)
+	color2 = RGB(0, 1, 0)
+	border1 = Tablet(
+		a=border_color,
+		b=border_color,
+		c=border_color,
+		d=border_color,
+		threading=BackToFront())
+	border2 = Tablet(
+		a=border1.a,
+		b=border1.b,
+		c=border1.c,
+		d=border1.d,
+		threading=other(border1.threading))
+	(2 * border1) + (2 * border2)
+end
+
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
 [deps]
@@ -829,6 +892,8 @@ version = "5.1.1+0"
 # ╠═786f8502-a081-4baf-b82d-a936cdfaae5e
 # ╠═b12c2fe2-a32e-4e6f-a7d7-cfc24e8cb00c
 # ╠═0fea18b7-b40e-4ca5-95e5-744e619ea14a
+# ╟─31bdd4ca-aa24-4600-9a72-36410636019b
+# ╠═bf12e28b-6bd1-45e3-9cea-e81d412c0097
 # ╟─56453fbd-6f6a-4c11-b2ba-acae84b66f48
 # ╟─50e521b5-c4f7-464d-b6dd-5c7f9d5b4bd0
 # ╠═86033a92-cd04-4c52-845d-89a8a473506c
@@ -878,5 +943,6 @@ version = "5.1.1+0"
 # ╠═93497aa8-ba19-45fe-a596-dd5ef194229f
 # ╟─ee85e6c6-2ade-4178-8850-55e776916ac1
 # ╟─910c1e57-f7f0-4cb9-aa6c-826ff71e7b3a
+# ╠═11ac0388-eadf-48c7-8ec9-2c4ce0f5169f
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
