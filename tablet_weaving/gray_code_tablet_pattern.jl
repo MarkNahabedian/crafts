@@ -246,15 +246,22 @@ Whether **forward** rotation turns the card in the **ABCD** or the
 
 """
 
-# ╔═╡ 50e521b5-c4f7-464d-b6dd-5c7f9d5b4bd0
-"""
-    rotate!(::Tablet, ::AbstractDirection)
-Rotate the tablet by one position in the specified direction.
-"""
-function rotate! end
-
 # ╔═╡ 86033a92-cd04-4c52-845d-89a8a473506c
+"""
+    RotationDirection
+
+`RotationDirection` is the abstract supertype of all tablet rotations.
+"""
 abstract type RotationDirection end
+
+# ╔═╡ f1c8a4c6-6c22-49f4-9df1-ef3ae5e3cb40
+"""
+    rotation(::Tablet, ::RotationDirection)
+
+Return the change in the `Tablet`'s `accumulated_rotation` if the specified
+`AbstractRotation is applied.
+"""
+function rotation(::Tablet, ::RotationDirection) end
 
 # ╔═╡ bb8a5f20-62af-4f28-b0df-85af57beb8f3
 """
@@ -264,11 +271,7 @@ the location in space previously occupied by the B corner.
 struct ABCD <: RotationDirection end
 
 # ╔═╡ 9d85d3ef-847b-405c-817b-71097b56fee5
-function rotate!(t::Tablet, ::ABCD)
-	new_rotation = t.this_shot_rotation + 1
-	t.this_shot_rotation = new_rotation
-	return t
-end
+rotation(::Tablet, ::ABCD) = 1
 
 # ╔═╡ b3ec1ee7-77d8-417a-834a-70c6c6608ae7
 """
@@ -278,11 +281,7 @@ the location in space previously occupied by the D corner.
 struct DCBA <: RotationDirection end
 
 # ╔═╡ 748199f2-e5d8-4272-9120-f8b50264b5d6
-function rotate!(t::Tablet, ::DCBA)
-	new_rotation = t.this_shot_rotation - 1
-	t.this_shot_rotation = new_rotation
-	return t
-end
+rotation(t::Tablet, ::DCBA) = -1
 
 # ╔═╡ b38913ac-f91f-4e6d-a95a-506b8d3c754c
 """
@@ -292,11 +291,11 @@ the weaver.  Whether this results in ABCD or DCBA rotation depends on how the ca
 struct Clockwise <: RotationDirection end
 
 # ╔═╡ 8eea1d46-ca5b-48d4-9829-bce769dfcfbb
-function rotate!(t::Tablet, ::Clockwise)
+function rotation(t::Tablet, ::Clockwise)
 	if isa(t.threading, BackToFront)
-		rotate!(t, ABCD())
+		rotation(t, ABCD())
 	else
-		rotate!(t, DCBA())
+		rotation(t, DCBA())
 	end
 end
 
@@ -309,11 +308,11 @@ depends on whether the card is `BackToFront` or `FrontToBack` threaded.
 struct CounterClockwise <: RotationDirection end
 
 # ╔═╡ 82725eaa-1605-4471-a808-360d0693dd43
-function rotate!(t::Tablet, ::CounterClockwise)
+function rotation(t::Tablet, ::CounterClockwise)
 	if isa(t.threading, FrontToBack)
-		rotate!(t, ABCD())
+		rotation(t, ABCD())
 	else
-		rotate!(t, DCBA())
+		rotation(t, DCBA())
 	end
 end
 
@@ -325,11 +324,11 @@ weaver and the cloth beam to be the bottom corner closest to the weaver.
 struct Forward <: RotationDirection end
 
 # ╔═╡ 30c08bee-e3f9-4672-a4d6-29df3ba8a6e5
-function rotate!(t::Tablet, ::Forward)
+function rotation(t::Tablet, ::Forward)
 	if isa(t.stacking, FrontToTheRight)
-		rotate!(t, Clockwise())
+		rotation(t, Clockwise())
 	else
-		rotate!(t, CounterClockwise())
+		rotation(t, CounterClockwise())
 	end
 end
 
@@ -341,12 +340,24 @@ weaver and the cloth beam to be the bottom corner closest to the weaver.
 struct Backward <: RotationDirection end
 
 # ╔═╡ 6d796003-f336-44ed-8831-8ea2b56fe865
-function rotate!(t::Tablet, ::Backward)
+function rotation(t::Tablet, ::Backward)
 	if isa(t.stacking, FrontToTheLeft)
-		rotate!(t, Clockwise())
+		rotation(t, Clockwise())
 	else
-		rotate!(t, CounterClockwise())
+		rotation(t, CounterClockwise())
 	end
+end
+
+# ╔═╡ 50e521b5-c4f7-464d-b6dd-5c7f9d5b4bd0
+"""
+    rotate!(::Tablet, ::RotationDirection)
+
+Rotate the tablet by one position in the specified direction.
+"""
+function rotate!(t::Tablet, d::RotationDirection)
+	new_rotation = rotation(t, d)
+	t.this_shot_rotation += new_rotation
+	return t
 end
 
 # ╔═╡ e31dd514-64af-4491-aac2-b47a85372650
@@ -458,12 +469,23 @@ Return the edge number of the edge of the tablet that is facing the shed.
 """
 function shed_edge(t::Tablet)
 	# Should we consider this_shot_rotation?
+	# FIX THIS TO ACCOUNT FOR STACKING.
 	r = mod(t.accumulated_rotation , 4)
 	if r == 0 4
 	elseif r == 1 3
 	elseif r == 2 2
 	else 1
 	end
+end
+
+# ╔═╡ f7e02d45-6de4-408c-99a0-ecaa274c6f39
+"""
+    top_edge(::Tablet)
+
+Return the number of the top edge of the tablet.
+This edge number is eaqsier to see on the loop than the shed edge.
+"""
+function top_edge(t::Tablet)
 end
 
 # ╔═╡ ea0b660e-9512-4ad1-b99a-e17753f47d74
@@ -1002,15 +1024,16 @@ version = "5.1.1+0"
 # ╟─31bdd4ca-aa24-4600-9a72-36410636019b
 # ╠═bf12e28b-6bd1-45e3-9cea-e81d412c0097
 # ╟─56453fbd-6f6a-4c11-b2ba-acae84b66f48
+# ╟─86033a92-cd04-4c52-845d-89a8a473506c
+# ╟─f1c8a4c6-6c22-49f4-9df1-ef3ae5e3cb40
 # ╟─50e521b5-c4f7-464d-b6dd-5c7f9d5b4bd0
-# ╠═86033a92-cd04-4c52-845d-89a8a473506c
 # ╟─bb8a5f20-62af-4f28-b0df-85af57beb8f3
 # ╟─9d85d3ef-847b-405c-817b-71097b56fee5
 # ╟─b3ec1ee7-77d8-417a-834a-70c6c6608ae7
 # ╟─748199f2-e5d8-4272-9120-f8b50264b5d6
 # ╟─e31dd514-64af-4491-aac2-b47a85372650
-# ╠═b38913ac-f91f-4e6d-a95a-506b8d3c754c
-# ╠═8eea1d46-ca5b-48d4-9829-bce769dfcfbb
+# ╟─b38913ac-f91f-4e6d-a95a-506b8d3c754c
+# ╟─8eea1d46-ca5b-48d4-9829-bce769dfcfbb
 # ╟─f3a1f857-0d6c-4f29-8095-4c6f189b3604
 # ╟─82725eaa-1605-4471-a808-360d0693dd43
 # ╟─71e0104b-beb4-4e3e-8def-218f88fdfbcd
@@ -1024,6 +1047,7 @@ version = "5.1.1+0"
 # ╟─10388ccf-6c52-4113-b34d-e5a54ebec2a7
 # ╟─e275a226-c404-4e8b-a9de-2b126da4b452
 # ╠═98151391-5799-4e96-b1c5-8098dd45b396
+# ╠═f7e02d45-6de4-408c-99a0-ecaa274c6f39
 # ╠═ea0b660e-9512-4ad1-b99a-e17753f47d74
 # ╟─776e4a65-62f7-4201-b8e5-6d5326e653fa
 # ╠═98bb29dc-55e7-4f42-8456-d72079801a3a
