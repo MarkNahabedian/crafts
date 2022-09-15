@@ -852,11 +852,16 @@ of the tablet that's at the back of the shed.
 md"""
 ## Generating a Pattern
 
-We have an array of the "image" we want to weave.  How do we translate that into a set of tablets, their warping, and their motions?
+We have an array of the "image" we want to weave.  How do we translate that into
+a set of tablets, their warping, and their motions?
 
-How do we execute that "plan" to produce a stitch image to see how the pattern turned out.
+How do we execute that "plan" to produce a stitch image to see how the pattern
+turned out.
 
-For a two color pattern, we can warp each tablet with one color in holes **A** and **C** and the other in holes **B** and **D**.  Whatever the previous stitch, the tablet can be rotated to either color.  The slant of the stitch can't be controlled though.
+For a two color pattern, we can warp each tablet with one color in holes **A**
+and **C** and the other in holes **B** and **D**.  Whatever the previous stitch,
+the tablet can be rotated to either color.  The slant of the stitch can't be
+controlled though.
 """
 
 # ╔═╡ 11ac0388-eadf-48c7-8ec9-2c4ce0f5169f
