@@ -127,15 +127,18 @@ end
 md"""
 ### Tablet Stacking
 
-If the tablets are arranged with a flat side facing the weaver this would take too much spance and also cause other inconveniences.  Instead, tablets are arrahged so that their flat faces face each other.  This forms a horizontal stack from one side
-of the loom to the other.
+If the tablets are arranged with a flat side facing the weaver this would take
+too much space and also cause other inconveniences.  Instead, tablets are
+arrahged so that their flat faces face each other.  This forms a horizontal
+stack from one side of the loom to the other.
 
-When stacked like this, a tablet is said to be stacked `FrontToTheRight` if it's
-front face faces towards the right side of the loom rom the weaver's perspective.
-A tablet facing the opposite direction is said to be threaded `FrontToTheLeft`.
+When stacked like this, a tablet is said to be stacked `FrontToTheRight` if
+it's front face faces towards the right side of the loom rom the weaver's
+perspective. A tablet facing the opposite direction is said to be threaded
+`FrontToTheLeft`.
 
-For brevity in textual representations, `FrontToTheRight` is represented with a 
-`→` right arrow and `FrontToTheLeft` with a `←` left arrow.
+For brevity in textual representations, `FrontToTheRight` is represented with
+a `→` right arrow and `FrontToTheLeft` with a `←` left arrow.
 """
 
 # ╔═╡ b12c2fe2-a32e-4e6f-a7d7-cfc24e8cb00c
@@ -286,7 +289,9 @@ rotation(t::Tablet, ::DCBA) = -1
 # ╔═╡ b38913ac-f91f-4e6d-a95a-506b8d3c754c
 """
 The `Clockwise` direction refers to how the tablet would move if it were facing
-the weaver.  Whether this results in ABCD or DCBA rotation depends on how the card is threaded since that determines Whether the front or the back of the tablet is facing the weaver.
+the weaver.  Whether this results in ABCD or DCBA rotation depends on how the
+card is threaded since that determines Whether the front or the back of the
+tablet is facing the weaver.
 """
 struct Clockwise <: RotationDirection end
 
@@ -418,7 +423,9 @@ end
 
 # ╔═╡ ede7b3b1-5ec6-4abe-95c2-72b68552695a
 md"""
-Each `Tablet` accumulates its total rotation in its `accumulated_rotation` field.  Given a tablet's current rotation, we sometimes need to know which warp thread is where or which edge of the card faces the shed.
+Each `Tablet` accumulates its total rotation in its `accumulated_rotation` field.
+Given a tablet's current rotation, we sometimes need to know which warp thread is
+where or which edge of the card faces the shed.
 """
 
 # ╔═╡ 9b217c54-ad77-4ce3-9715-cde19bed7bc4
@@ -486,12 +493,19 @@ Return the number of the top edge of the tablet.
 This edge number is eaqsier to see on the loop than the shed edge.
 """
 function top_edge(t::Tablet)
+	# t.stacking affects which edge faces the shed but not which is on top
+	# since changing t.stacking can only be done by flipping the card on its
+	# vertical axis.
 end
 
 # ╔═╡ ea0b660e-9512-4ad1-b99a-e17753f47d74
 """
     shot!(::Tablet)
-Apply the current rotation to the tablet and return the colors of the warp threads passing over the top and bottom of the fabric, and the crossing direction (as a forward or backslash character) when looking at that face of the fabric.
+
+Apply the current rotation to the tablet and return the colors of the warp
+threads passing over the top and bottom of the fabric, and the crossing
+direction (as a forward or backslash character) when looking at that face
+of the fabric.
 """
 function shot!(t::Tablet)
 	@assert(abs(t.this_shot_rotation) == 1,
@@ -510,7 +524,9 @@ end
 
 # ╔═╡ 776e4a65-62f7-4201-b8e5-6d5326e653fa
 md"""
-For a given `Tablet`, if `a` and `b` are one color and `c` and `d` are another, then we can rotate the tablet in one direction to change colors and the other to keep the color the same.  We can't control the slant of the stitch though.
+For a given `Tablet`, if `a` and `b` are one color and `c` and `d` are another,
+then we can rotate the tablet in one direction to change colors and the other
+to keep the color the same.  We can't control the slant of the stitch though.
 """
 
 # ╔═╡ 98bb29dc-55e7-4f42-8456-d72079801a3a
@@ -653,7 +669,9 @@ stitch_image(length, width, direction::Char) =
 # ╔═╡ 326c169a-2386-4e5d-97eb-3f6b6f691b9f
 """
     color_stitch(stitch_image, foreground::Color, background::Color)
-Return a `Matrix` of `Color` with the same dimensions as stitch_image (which should have been constructed by `stitch_image`).
+
+Return a `Matrix` of `Color` with the same dimensions as stitch_image (which
+should have been constructed by `stitch_image`).
 """
 color_stitch(stitch::Matrix{Bool}, foreground::Color, background::Color) =
 	map(stitch) do bit
@@ -676,8 +694,8 @@ md"""
 I'm new to tablet weaving.
 
 To test the code above, we try constructing and rendering a simple pattern.  I found this one
-["Simple Diamonds.. err Chevrons"](https://www.pinterest.com/pin/363525001170926977/) and will try to implement/replicate it here.
-
+["Simple Diamonds.. or Chevrons"](https://www.pinterest.com/pin/363525001170926977/)
+and will try to implement/replicate it here.
 """
 
 # ╔═╡ c3d99a5c-9c4c-4aff-b932-2dcc45a392ce
@@ -811,13 +829,23 @@ tablet_weave(make_diamond_tablets(), Forward(), 16)
 md"""
 ## How to Describe Tablet Motion During Weaving
 
-After each throw, each tablet must be rotated **forward** or **backward** to make a new shed.  In the simplest patterns, all tablets are rotated in the same direction.  For our gray code pattern however, tablets move in different directions for each shed.  How can we represent these rotations for ease of execution by the weaver.
+After each throw, each tablet must be rotated **forward** or **backward** to make
+a new shed.  In the simplest patterns, all tablets are rotated in the same
+direction.  For our gray code pattern however, tablets move in different
+directions for each shed.  How can we represent these rotations for ease of
+execution by the weaver.
 
-There is one set of tablet motions for each throw of the shuttle.  We should have a row number.  The weaver muust keep track of which row they're working.
+There is one set of tablet motions for each throw of the shuttle.  We should have
+a row number.  The weaver muust keep track of which row they're working.
 
-There is motion for each tablet.  The motion of a single tablet can be concisely described by unicode arrows () or by the edge number of the tablet that is facing the shed.  The latter is less error prone since an incorrect starting position for a tablet will be detected.
+There is motion for each tablet.  The motion of a single tablet can be concisely
+described by unicode arrows () or by the edge number of the tablet that is facing
+the shed.  The latter is less error prone since an incorrect starting position
+for a tablet will be detected.
 
-The simplest representation is a `Vector` for for the whole pattern each throw.  Each element would be a `Vector` of digits rfom `1` to `4` indicating the edge of the tablet that's at the back of the shed.
+The simplest representation is a `Vector` for for the whole pattern each throw.
+Each element would be a `Vector` of digits rfom `1` to `4` indicating the edge
+of the tablet that's at the back of the shed.
 """
 
 # ╔═╡ 910c1e57-f7f0-4cb9-aa6c-826ff71e7b3a
@@ -1018,7 +1046,7 @@ version = "5.1.1+0"
 # ╟─1cf1cf59-d324-447a-8a72-b393c96b549f
 # ╟─68c32382-4511-4345-a523-d9854b91e754
 # ╠═786f8502-a081-4baf-b82d-a936cdfaae5e
-# ╟─6d65f0b3-7370-4a7d-82bc-607f8b0f8c8c
+# ╠═6d65f0b3-7370-4a7d-82bc-607f8b0f8c8c
 # ╠═b12c2fe2-a32e-4e6f-a7d7-cfc24e8cb00c
 # ╠═0fea18b7-b40e-4ca5-95e5-744e619ea14a
 # ╟─31bdd4ca-aa24-4600-9a72-36410636019b
@@ -1048,7 +1076,7 @@ version = "5.1.1+0"
 # ╟─e275a226-c404-4e8b-a9de-2b126da4b452
 # ╠═98151391-5799-4e96-b1c5-8098dd45b396
 # ╠═f7e02d45-6de4-408c-99a0-ecaa274c6f39
-# ╠═ea0b660e-9512-4ad1-b99a-e17753f47d74
+# ╟─ea0b660e-9512-4ad1-b99a-e17753f47d74
 # ╟─776e4a65-62f7-4201-b8e5-6d5326e653fa
 # ╠═98bb29dc-55e7-4f42-8456-d72079801a3a
 # ╠═a68fe666-2be8-421e-9c1a-6eb4d4e56ef5
