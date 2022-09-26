@@ -231,6 +231,106 @@ GRAY_WEAVE = let
 	vcat(reverse(bottom; dims=1), bottom)
 end
 
+# ╔═╡ 47320875-bad1-4528-8f78-82b017deedab
+begin
+	# The structure of a Tablet:
+
+	TABLET_HOLE_LABELS = 'A':'D'
+	TABLET_EDGE_LABELS = 1:4
+	
+	struct TabletHole
+		label::Char
+
+		function TabletHole(label::Char)
+			@assert label in TABLET_HOLE_LABELS
+			new(label)
+		end
+	end
+
+	struct TabletEdge
+		label::Int
+	
+		function TabletEdge(label::Int)
+			@assert label in TABLET_EDGE_LABELS
+			new(label)
+		end
+	end
+
+	function modindex(index, seq)
+		Int(mod(index - 1, length(seq)) + 1)
+	end
+
+	next(elt, seq) =
+		seq[modindex(findfirst(x -> x == elt, seq) + 1, seq)]
+
+	previous(elt, seq) =
+		seq[modindex(findfirst(x -> x == elt, seq) - 1, seq)]
+
+	function opposite(elt, seq)
+		@assert iseven(length(seq))
+		seq[
+			modindex(findfirst(x -> x == elt, seq) + length(seq) / 2,
+				seq)
+		]
+	end
+
+	next(hole::TabletHole) = TabletHole(next(hole.label, TABLET_HOLE_LABELS))
+	previous(hole::TabletHole) = TabletHole(previous(hole.label, TABLET_HOLE_LABELS))
+	opposite(hole::TabletHole) = TabletHole(opposite(hole.label, TABLET_HOLE_LABELS))
+
+	next(edge::TabletEdge) = TabletEdge(next(edge.label, TABLET_EDGE_LABELS))
+	previous(edge::TabletEdge) = TabletEdge(previous(edge.label, TABLET_EDGE_LABELS))
+	opposite(edge::TabletEdge) = TabletEdge(opposite(edge.label, TABLET_EDGE_LABELS))
+
+	function next_hole(edge::TabletEdge)::TabletHole
+		label = edge.label
+		if label == 1 TabletHole('B')
+		elseif label == 2 TabletHole('C')
+		elseif label == 3 TabletHole('D')
+		elseif label == 4 TabletHole('A')
+		else error("Unsupported edge label: $label")
+		end
+	end
+
+	function previous_hole(edge::TabletEdge)::TabletHole
+		label = edge.label
+		if label == 1 TabletHole('A')
+		elseif label == 2 TabletHole('B')
+		elseif label == 3 TabletHole('C')
+		elseif label == 4 TabletHole('D')
+		else error("Unsupported edge label: $label")
+		end
+	end
+end
+
+# ╔═╡ 8b85264e-25c8-4ae3-a952-ee30d622f918
+begin
+	for hole in TabletHole.(TABLET_HOLE_LABELS)
+		@assert next(previous(hole))== hole
+		@assert previous(next(hole)) == hole
+		@assert opposite(opposite(hole)) == hole
+	end
+	
+	for edge in TabletEdge.(TABLET_EDGE_LABELS)
+		@assert next(previous(edge))== edge
+		@assert previous(next(edge)) == edge
+		@assert opposite(opposite(edge)) == edge
+	end
+	
+	html"Tablet structure assertions pass"
+end
+
+# ╔═╡ a5796f2d-3754-4d99-9a37-2b476cc4f5a2
+function warp_color(t::Tablet{T}, hole::TabletHole)::T where T
+	h = hole.label
+	if h == 'A' t.a
+	elseif h == 'B' t.b
+	elseif h == 'C' t.c
+	elseif h == 'D' t.d
+	else error("Unsuppoorted hole label: $h")
+	end
+end
+
 # ╔═╡ 56453fbd-6f6a-4c11-b2ba-acae84b66f48
 md"""
 ### Tablet Rotation
@@ -288,16 +388,15 @@ rotation(t::Tablet, ::DCBA) = -1
 
 # ╔═╡ b38913ac-f91f-4e6d-a95a-506b8d3c754c
 """
-The `Clockwise` direction refers to how the tablet would move if it were facing
-the weaver.  Whether this results in ABCD or DCBA rotation depends on how the
-card is threaded since that determines Whether the front or the back of the
-tablet is facing the weaver.
+The `Clockwise` direction refers to how the tablet would move if its front or
+back face (depending on threading) were facing the weaver.  Whether this
+results in ABCD or DCBA rotation depends on how the card is threaded.
 """
 struct Clockwise <: RotationDirection end
 
 # ╔═╡ 8eea1d46-ca5b-48d4-9829-bce769dfcfbb
 function rotation(t::Tablet, ::Clockwise)
-	if isa(t.threading, BackToFront)
+	if t.threading isa BackToFront
 		rotation(t, ABCD())
 	else
 		rotation(t, DCBA())
@@ -306,9 +405,10 @@ end
 
 # ╔═╡ f3a1f857-0d6c-4f29-8095-4c6f189b3604
 """
-The `CounterClockwise` direction refers to how the tablet would move if it were facing
-the weaver.  Whether the front or the back of the tablet is facing the weaver
-depends on whether the card is `BackToFront` or `FrontToBack` threaded.
+The `CounterClockwise` direction refers to how the tablet would move if its front
+or back face (depending on threading)  were facing the weaver.  Whether the front
+or the back of the tablet is facing the weaver depends on whether the card is
+BackToFront` or `FrontToBack` threaded.
 """
 struct CounterClockwise <: RotationDirection end
 
@@ -331,9 +431,9 @@ struct Forward <: RotationDirection end
 # ╔═╡ 30c08bee-e3f9-4672-a4d6-29df3ba8a6e5
 function rotation(t::Tablet, ::Forward)
 	if isa(t.stacking, FrontToTheRight)
-		rotation(t, Clockwise())
+		rotation(t, ABCD())
 	else
-		rotation(t, CounterClockwise())
+		rotation(t, DCBA())
 	end
 end
 
@@ -347,9 +447,9 @@ struct Backward <: RotationDirection end
 # ╔═╡ 6d796003-f336-44ed-8831-8ea2b56fe865
 function rotation(t::Tablet, ::Backward)
 	if isa(t.stacking, FrontToTheLeft)
-		rotation(t, Clockwise())
+		rotation(t, ABCD())
 	else
-		rotation(t, CounterClockwise())
+		rotation(t, DCBA())
 	end
 end
 
@@ -428,38 +528,8 @@ Given a tablet's current rotation, we sometimes need to know which warp thread i
 where or which edge of the card faces the shed.
 """
 
-# ╔═╡ 9b217c54-ad77-4ce3-9715-cde19bed7bc4
-"""
-    threads0(::Tablet)
-return the threads of the unrotated Tablet in the order
-1. top corner cloest to cloth beam -- hole **A**,
-2. top corner furthest from cloth beam -- hole **B**,
-3. bottom corner further from cloth beam -- hole **C**,
-4. bottom corner closest to cloth beam -- hole **D**.
-"""
-function threads0(t::Tablet)
-	if isa(t.threading, BackToFront)
-		[t.a, t.b, t.c, t.d]
-	else
-		[t.b, t.a, t.d, t.c]
-	end
-end
-
-# ╔═╡ 10388ccf-6c52-4113-b34d-e5a54ebec2a7
-"""
-    threads(::Tablet)
-Return the threads of the tablet as rotated, in the order
-1. top corner cloest to cloth beam,
-2. top corner furthest from cloth beam,
-3. bottom corner further from cloth beam,
-4. bottom corner closest to cloth beam.
-"""
-function threads(t::Tablet)
-	ts = threads0(t)
-	[ ts[1 + mod(i - t.accumulated_rotation, 4)] for i in 0:3 ] 
-end
-
 # ╔═╡ e275a226-c404-4e8b-a9de-2b126da4b452
+#=
 let
 	t = Tablet(; a=:A, b=:B, c=:C, d=:D)
 	@assert threads(t) == [:A, :B, :C, :D]
@@ -467,35 +537,26 @@ let
 	@assert threads(t) == [:D, :A, :B, :C]
 	html"threads() assertions passed."
 end
-
-# ╔═╡ 98151391-5799-4e96-b1c5-8098dd45b396
-"""
-   shed_edge(::Tablet)
-
-Return the edge number of the edge of the tablet that is facing the shed.
-"""
-function shed_edge(t::Tablet)
-	# Should we consider this_shot_rotation?
-	# FIX THIS TO ACCOUNT FOR STACKING.
-	r = mod(t.accumulated_rotation , 4)
-	if r == 0 4
-	elseif r == 1 3
-	elseif r == 2 2
-	else 1
-	end
-end
+=#
 
 # ╔═╡ f7e02d45-6de4-408c-99a0-ecaa274c6f39
 """
-    top_edge(::Tablet)
+    top_edge(::Tablet)::TabletEdge
 
-Return the number of the top edge of the tablet.
-This edge number is eaqsier to see on the loop than the shed edge.
+Return the TabletEdge of the top edge of the tablet.
+This edge is easier to see on the loom than the shed edge
+It is also unaffected by the tablet's `stacking`.
 """
-function top_edge(t::Tablet)
+function top_edge(t::Tablet)::TabletEdge
 	# t.stacking affects which edge faces the shed but not which is on top
 	# since changing t.stacking can only be done by flipping the card on its
 	# vertical axis.
+	r = mod(t.accumulated_rotation, 4)
+	if r == 0 TabletEdge(1)
+	elseif r == 1 TabletEdge(4)
+	elseif r == 2 TabletEdge(3)
+	else TabletEdge(2)
+	end
 end
 
 # ╔═╡ ea0b660e-9512-4ad1-b99a-e17753f47d74
@@ -510,16 +571,27 @@ of the fabric.
 function shot!(t::Tablet)
 	@assert(abs(t.this_shot_rotation) == 1,
 		"in shot!, this_shot_rotation = $(t.this_shot_rotation)")
+	te = top_edge(t)
+	be = opposite(te)
 	t.accumulated_rotation += t.this_shot_rotation
-	thrds = threads(t)
-	stitchslant = t.this_shot_rotation > 0 ? '/' : '\\'
-	front, back, slant = if t.this_shot_rotation > 0
-		thrds[1], thrds[3], stitchslant
+	hole = if t.this_shot_rotation > 0
+		if t.threading isa BackToFront
+			stitchslant = '/'
+		else
+			stitchslant = '\\'
+		end
+		previous_hole
 	else
-		thrds[2], thrds[4], stitchslant
+		if t.threading isa BackToFront
+			stitchslant = '\\'
+		else
+			stitchslant = '/'
+		end
+		next_hole
 	end
 	t.this_shot_rotation = 0
-	return front, back, slant
+	wc(edge) = warp_color(t, hole(edge))
+	return wc(te), wc(be), stitchslant
 end
 
 # ╔═╡ 776e4a65-62f7-4201-b8e5-6d5326e653fa
@@ -542,33 +614,6 @@ begin
 		for i in 1:8
 	]
 	stablets, ztablets
-end
-
-# ╔═╡ a68fe666-2be8-421e-9c1a-6eb4d4e56ef5
-map(threads, stablets)
-
-# ╔═╡ 3c43dd0f-d8d4-460b-a8da-64b3831f6873
-map(threads, ztablets)
-
-# ╔═╡ 7edb81bb-3909-4e57-9028-60508b560509
-let
-	tablet = Tablet(a=Gray(0.2), b=Gray(0.4), c=Gray(0.6), d=Gray(0.8))
-	# We expect the colors to be D, A, B, C
-	map(0:7) do rot
-		tablet.accumulated_rotation = rot
-		threads(tablet)[1]
-	end
-end
-
-# ╔═╡ d0feb96c-1350-41f2-8a43-39ae74042c27
-let
-	tablet = Tablet(; a=Gray(0.2), b=Gray(0.4), c=Gray(0.6), d=Gray(0.8),
-	                stacking=FrontToTheLeft())
-	# We expect the colors to be D, A, B, C
-	map(0:7) do rot
-		tablet.accumulated_rotation = rot
-		threads(tablet)[1]
-	end
 end
 
 # ╔═╡ c6a06609-bf84-45cb-a837-68760b826cb3
@@ -939,7 +984,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.8.0"
 manifest_format = "2.0"
-project_hash = "bd0d9bf754f39afa9d34f190995e15e4e3f01656"
+project_hash = "dddd2fb162cfbc4888d0b85d4e919735f9e18768"
 
 [[deps.Artifacts]]
 uuid = "56f22d72-fd6d-98f1-02f0-08ddc0907c33"
@@ -1049,11 +1094,14 @@ version = "5.1.1+0"
 # ╠═c2b1f51e-77fb-4e23-94cc-699c124b81c3
 # ╠═78e317ca-d347-45a9-9058-b2e7b187c843
 # ╟─1cf1cf59-d324-447a-8a72-b393c96b549f
+# ╠═47320875-bad1-4528-8f78-82b017deedab
+# ╠═8b85264e-25c8-4ae3-a952-ee30d622f918
 # ╟─68c32382-4511-4345-a523-d9854b91e754
 # ╠═786f8502-a081-4baf-b82d-a936cdfaae5e
 # ╠═6d65f0b3-7370-4a7d-82bc-607f8b0f8c8c
 # ╠═b12c2fe2-a32e-4e6f-a7d7-cfc24e8cb00c
 # ╠═0fea18b7-b40e-4ca5-95e5-744e619ea14a
+# ╠═a5796f2d-3754-4d99-9a37-2b476cc4f5a2
 # ╟─31bdd4ca-aa24-4600-9a72-36410636019b
 # ╠═bf12e28b-6bd1-45e3-9cea-e81d412c0097
 # ╟─56453fbd-6f6a-4c11-b2ba-acae84b66f48
@@ -1071,23 +1119,16 @@ version = "5.1.1+0"
 # ╟─82725eaa-1605-4471-a808-360d0693dd43
 # ╟─71e0104b-beb4-4e3e-8def-218f88fdfbcd
 # ╟─b901fcdd-31dc-4643-9dba-21e70207141b
-# ╟─30c08bee-e3f9-4672-a4d6-29df3ba8a6e5
+# ╠═30c08bee-e3f9-4672-a4d6-29df3ba8a6e5
 # ╟─5498ffbc-40f9-44dd-9b6a-484e2498c406
-# ╟─6d796003-f336-44ed-8831-8ea2b56fe865
+# ╠═6d796003-f336-44ed-8831-8ea2b56fe865
 # ╟─b396b71e-8510-4f7c-9017-50693b2f9c1d
 # ╟─ede7b3b1-5ec6-4abe-95c2-72b68552695a
-# ╠═9b217c54-ad77-4ce3-9715-cde19bed7bc4
-# ╟─10388ccf-6c52-4113-b34d-e5a54ebec2a7
 # ╟─e275a226-c404-4e8b-a9de-2b126da4b452
-# ╠═98151391-5799-4e96-b1c5-8098dd45b396
 # ╠═f7e02d45-6de4-408c-99a0-ecaa274c6f39
-# ╟─ea0b660e-9512-4ad1-b99a-e17753f47d74
+# ╠═ea0b660e-9512-4ad1-b99a-e17753f47d74
 # ╟─776e4a65-62f7-4201-b8e5-6d5326e653fa
 # ╠═98bb29dc-55e7-4f42-8456-d72079801a3a
-# ╠═a68fe666-2be8-421e-9c1a-6eb4d4e56ef5
-# ╠═3c43dd0f-d8d4-460b-a8da-64b3831f6873
-# ╠═7edb81bb-3909-4e57-9028-60508b560509
-# ╠═d0feb96c-1350-41f2-8a43-39ae74042c27
 # ╟─c6a06609-bf84-45cb-a837-68760b826cb3
 # ╟─a24eae67-f116-4c75-8fda-b942dab326c7
 # ╠═3c10060e-f2e1-4a05-8322-65009f5ef14e
