@@ -878,18 +878,18 @@ After each throw, each tablet must be rotated **forward** or **backward** to mak
 a new shed.  In the simplest patterns, all tablets are rotated in the same
 direction.  For our gray code pattern however, tablets move in different
 directions for each shed.  How can we represent these rotations for ease of
-execution by the weaver.
+execution by the weaver?
 
 There is one set of tablet motions for each throw of the shuttle.  We should have
-a row number.  The weaver muust keep track of which row they're working.
+a row number.  The weaver must keep track of which row they're working.
 
 There is motion for each tablet.  The motion of a single tablet can be concisely
-described by unicode arrows () or by the edge number of the tablet that is facing
-the shed.  The latter is less error prone since an incorrect starting position
-for a tablet will be detected.
+described by unicode arrows (🡑, 🡓) or by the edge number of the tablet that is
+facing the shed or on top.  The latter is less error prone since an incorrect
+starting position for a tablet will be detected.
 
 The simplest representation is a `Vector` for for the whole pattern each throw.
-Each element would be a `Vector` of digits rfom `1` to `4` indicating the edge
+Each element would be a `Vector` of digits rfom `1` to `4` indicating the edg
 of the tablet that's at the back of the shed.
 """
 
