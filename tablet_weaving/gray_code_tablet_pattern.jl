@@ -172,6 +172,21 @@ end
 	this_shot_rotation::Int = 0
 end
 
+# ╔═╡ 61de53db-f01d-4294-8baf-d570abcd8d15
+function copy(t::Tablet)
+	@assert t.id == nothing
+	@assert t.accumulated_rotation == 0
+	@assert t.this_shot_rotation == 0
+	Tablet(;
+		id = t.id,
+		a = t.a,
+		b = t.b,
+		c = t.c,
+		d = t.d,
+		threading = t.threading,
+		stacking = t.stacking)
+end
+
 # ╔═╡ 31bdd4ca-aa24-4600-9a72-36410636019b
 md"""
 We use a `Vector` of `Tablet`s to describe how the loom is set up for
@@ -181,35 +196,42 @@ wider pattern.  We can also multiply them to repeat tablets.
 
 # ╔═╡ bf12e28b-6bd1-45e3-9cea-e81d412c0097
 begin
-    function (Base.:+)(a::Tablet{T}, b::Tablet{T})::Vector{Tablet{T}} where T
-        [a, b]
+    function (Base.:+)(a::Tablet{<:Any}, b::Tablet{<:Any})
+        [a; b]
     end
 
-    function (Base.:+)(a::Tablet{T}, v::Vector{Tablet{T}})::Vector{Tablet{T}} where T
-        [a, v...]
+    function (Base.:+)(a::Tablet{<:Any}, v::Vector{<:Tablet{<:Any}})
+        [a; v...]
     end
 
-    function (Base.:+)(v::Vector{Tablet{T}}, b::Tablet{T})::Vector{Tablet{T}} where T
-	[v..., b]
+    function (Base.:+)(v::Vector{<:Tablet{<:Any}}, b::Tablet{<:Any})
+		[v...; b]
     end
 
-    function (Base.:+)(v1::Vector{Tablet{T}}, 
-                       v2::Vector{Tablet{T}})::Vector{Tablet{T}} where T
-		[v1..., v2...]
+    function (Base.:+)(v1::Vector{<:Tablet{<:Any}}, v2::Vector{<:Tablet{<:Any}})
+		[v1...; v2...]
     end
 
-    function (Base.:*)(repeat::Int, t::Tablet{T})::Vector{Tablet{T}} where T
-		result = Vector{Tablet{T}}()
-		for i in 1:repeat
-		    push!(result, t)
+	function (Base.:+)(v1::Vector{<:Tablet{<:Any}}, vs::Vector{<:Tablet{<:Any}}...)
+		result = v1
+		for v2 in vs
+			result += v2
 		end
 		result
     end
 
-    function (Base.:*)(repeat::Int, v::Vector{Tablet{T}})::Vector{Tablet{T}} where T
-		result = Vector{Tablet{T}}()
+	function (Base.:*)(repeat::Int, t::Tablet{<:Any})
+		result = Vector{Tablet{<:Any}}()
 		for i in 1:repeat
-		    append!(result, v)
+		    push!(result, copy(t))
+		end
+		result
+    end
+
+    function (Base.:*)(repeat::Int, v::Vector{<:Tablet{<:Any}})
+		result = Vector{Tablet{<:Any}}()
+		for i in 1:repeat
+		    append!(result, copy.(v))
 		end
 		result
     end
@@ -329,6 +351,35 @@ function warp_color(t::Tablet{T}, hole::TabletHole)::T where T
 	elseif h == 'D' t.d
 	else error("Unsuppoorted hole label: $h")
 	end
+end
+
+# ╔═╡ 40bd184d-3332-49c0-a349-64b4e5fcc4aa
+let
+	border_color = RGB(0.5, 0.5, 0.5)
+	border1 = Tablet(
+		a=border_color,
+		b=border_color,
+		c=border_color,
+		d=border_color,
+		threading=BackToFront())
+
+	tplust = 2 * border1
+	@assert tplust isa Vector{Tablet{<:Any}}
+	@assert length(tplust) == 2
+
+	double = 2 * border1
+	@assert double isa Vector{Tablet{<:Any}}
+	@assert length(double) == 2
+
+	@assert length(border1 + border1 + border1) == 3
+
+	@assert length(2 * double) == 4
+
+	@assert length(double + tplust) == 4
+
+	@assert length(double + 3 * border1) == 5
+
+	html"Tablet arithmetic assertions pass."
 end
 
 # ╔═╡ 56453fbd-6f6a-4c11-b2ba-acae84b66f48
@@ -909,29 +960,10 @@ the tablet can be rotated to either color.  The slant of the stitch can't be
 controlled though.
 """
 
-# ╔═╡ 11ac0388-eadf-48c7-8ec9-2c4ce0f5169f
-let
-	border_color =RGB(0.5, 0.5, 0.5)
-	color1 = RGB(1, 0, 0)
-	color2 = RGB(0, 1, 0)
-	border1 = Tablet(
-		a=border_color,
-		b=border_color,
-		c=border_color,
-		d=border_color,
-		threading=BackToFront())
-	border2 = Tablet(
-		a=border1.a,
-		b=border1.b,
-		c=border1.c,
-		d=border1.d,
-		threading=other(border1.threading))
-	(2 * border1) + (2 * border2)
-end
-
 # ╔═╡ 6dc90672-f80e-4e2c-9689-7e777b03ff8d
 """
     tablets_for_image(image)
+
 Return a `Vector` of the `Tablet`s that could be used to weave the image, which should
 be a two dimensional array.  If the tablets can't be determined then an error is
 thrown.
@@ -963,6 +995,24 @@ end
 
 # ╔═╡ 4bd5b024-9be5-42f3-999b-6d9300003dd9
 tablets_for_image(GRAY_PATTERN)
+
+# ╔═╡ 11ac0388-eadf-48c7-8ec9-2c4ce0f5169f
+let
+	border_color = RGB(0.5, 0.5, 0.5)
+	border1 = Tablet(
+		a=border_color,
+		b=border_color,
+		c=border_color,
+		d=border_color,
+		threading=BackToFront())
+	border2 = Tablet(
+		a=border1.a,
+		b=border1.b,
+		c=border1.c,
+		d=border1.d,
+		threading=other(border1.threading))
+	(2 * border1) + tablets_for_image(GRAY_WEAVE) + (2 * border2)
+end
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -1101,9 +1151,11 @@ version = "5.1.1+0"
 # ╠═6d65f0b3-7370-4a7d-82bc-607f8b0f8c8c
 # ╠═b12c2fe2-a32e-4e6f-a7d7-cfc24e8cb00c
 # ╠═0fea18b7-b40e-4ca5-95e5-744e619ea14a
+# ╠═61de53db-f01d-4294-8baf-d570abcd8d15
 # ╠═a5796f2d-3754-4d99-9a37-2b476cc4f5a2
 # ╟─31bdd4ca-aa24-4600-9a72-36410636019b
 # ╠═bf12e28b-6bd1-45e3-9cea-e81d412c0097
+# ╠═40bd184d-3332-49c0-a349-64b4e5fcc4aa
 # ╟─56453fbd-6f6a-4c11-b2ba-acae84b66f48
 # ╟─86033a92-cd04-4c52-845d-89a8a473506c
 # ╟─f1c8a4c6-6c22-49f4-9df1-ef3ae5e3cb40
@@ -1150,8 +1202,8 @@ version = "5.1.1+0"
 # ╠═93497aa8-ba19-45fe-a596-dd5ef194229f
 # ╟─ee85e6c6-2ade-4178-8850-55e776916ac1
 # ╟─910c1e57-f7f0-4cb9-aa6c-826ff71e7b3a
-# ╠═11ac0388-eadf-48c7-8ec9-2c4ce0f5169f
 # ╠═6dc90672-f80e-4e2c-9689-7e777b03ff8d
 # ╠═4bd5b024-9be5-42f3-999b-6d9300003dd9
+# ╠═11ac0388-eadf-48c7-8ec9-2c4ce0f5169f
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
