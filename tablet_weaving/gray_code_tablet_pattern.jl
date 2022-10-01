@@ -119,8 +119,8 @@ begin
 		error("Invalid threading designation: $c")
 	end
 
-	threading_char(::BackToFront) = '/'
-	threading_char(::BackToFront) = '\\'
+	threading_char(::BackToFront) = '\u2571'
+	threading_char(::BackToFront) = '\u2572'
 end
 
 # ╔═╡ 6d65f0b3-7370-4a7d-82bc-607f8b0f8c8c
@@ -685,36 +685,59 @@ begin
 		css(x) = Int(round(x * 255))
 		"rgb($(css(color.r)), $(css(color.g)), $(css(color.b)))"
 	end
-	# Gray .val
+
+	csscolor(color::Colorant) =	"#$(hex(color))"
 end
 
 # ╔═╡ c4804cf2-85ba-4895-8404-47560df04e2f
-function chart_tablet(tablet::Tablet)
+function chart_tablet(tablet::Tablet; size=5, x=0)
 	@assert tablet.accumulated_rotation == 0
 	@assert tablet.this_shot_rotation == 0
-	grid_style =
-		"display: inline-grid; " *
-		"grid-template-columns: 1; " *
-		"grid-template-rows: 1fr 1fr 1fr 1fr 1fr; "
-	result = m("div", style=grid_style,
-		m("span", style="background: $(csscolor(tablet.a));"),
-		m("span", style="background: $(csscolor(tablet.b));"),
-		m("span", style="background: $(csscolor(tablet.c));"),
-		m("span", style="background: $(csscolor(tablet.d));"),
-		m("span", threading_char(tablet.threading)))
-	result
+	function swatch(i, c)
+		m("rect", width="$(size)mm", height="$(size)mm",
+				  x="$(x)mm", y="$(i * size)mm",
+			      fill="$(csscolor(c))",
+			      stroke="gray")
+	end
+	function threading(th)
+		x1 = x
+		x2 = x1 + size
+		y1 = 4 * size
+		y2 = 5 * size
+		# The direction that the thread passed through the card if the card
+		# is facing to the right (FrontToTheRight stacking)
+		if th isa BackToFront
+			m("line", stroke="gray", strokeWidth="3px",
+				x1="$(x1)mm", y1="$(y1)mm",
+				x2="$(x2)mm", y2="$(y2)mm")
+		else
+			m("line", stroke="gray", fill="gray", strokeWidth="5px",
+				x1="$(x2)mm", y1="$(y1)mm",
+				x2="$(x1)mm", y2="$(y2)mm")
+		end
+	end
+	m("svg", xmlns="http://www.w3.org/2000/svg",
+		m("g",
+			swatch(0, tablet.a), swatch(1, tablet.b),
+			swatch(2, tablet.c), swatch(3, tablet.d),
+			threading(tablet.threading)))
 end
 
 # ╔═╡ fd40ecf7-83cb-43b5-b87c-8273f8fd32c4
-string(chart_tablet(Tablet{Color}(;
-	a=RGB(1, 0, 0),
-	b=RGB(0, 1, 0),
-	c=RGB(0, 0,1),
-	d=RGB(0.5, 0.5, 0.5))))
+(chart_tablet(
+    Tablet{Color}(;
+                  a=RGB(1, 0, 0),
+                  b=RGB(0, 1, 0),
+                  c=RGB(0, 0,1),
+                  d=RGB(0.5, 0.5, 0.5));
+    x=10))
 
 # ╔═╡ 22c96c85-2344-46bc-a64c-460414575677
-function chart_tablets(tablets::Vector{Tablet})
-
+function chart_tablets(tablets::Vector{<:Tablet})
+	size = 5
+	m("svg", xmlns="http://www.w3.org/2000/svg",
+		[chart_tablet(tablet; size=size, x=size*(i-1))
+			for (i, tablet) in enumerate(tablets)]...)
 end
 
 # ╔═╡ 418c2904-d16a-4c2d-a02f-c069918dca4c
@@ -831,6 +854,9 @@ end
 # ╔═╡ c4ab1370-cc66-4b54-901f-1c2680c01bf7
 make_chevron_tablets()
 
+# ╔═╡ f3d5b031-748c-414b-b8a7-201039aa3ae5
+chart_tablets(make_chevron_tablets())
+
 # ╔═╡ 716bb7f6-d341-4828-8e31-8b135f7c016a
 function tablet_weave(tablets, rotation::RotationDirection, count::Int)
 	tapestry_top = []
@@ -917,6 +943,12 @@ function make_diamond_tablets()
 		tab(b, b, b, b, s)	  # 22
 	]
 end
+
+# ╔═╡ ed3bc04e-1178-4c04-9d35-3471f7b89c88
+length(make_diamond_tablets())
+
+# ╔═╡ fd07c1d6-808e-4573-8ff9-e47b0ee68756
+chart_tablets(make_diamond_tablets())
 
 # ╔═╡ 93497aa8-ba19-45fe-a596-dd5ef194229f
 tablet_weave(make_diamond_tablets(), Forward(), 16)
@@ -1185,7 +1217,7 @@ version = "5.1.1+0"
 # ╟─a24eae67-f116-4c75-8fda-b942dab326c7
 # ╠═3c10060e-f2e1-4a05-8322-65009f5ef14e
 # ╠═c4804cf2-85ba-4895-8404-47560df04e2f
-# ╠═fd40ecf7-83cb-43b5-b87c-8273f8fd32c4
+# ╟─fd40ecf7-83cb-43b5-b87c-8273f8fd32c4
 # ╠═22c96c85-2344-46bc-a64c-460414575677
 # ╠═418c2904-d16a-4c2d-a02f-c069918dca4c
 # ╠═abacffda-7c76-46cc-8e3c-e305a81b5702
@@ -1196,9 +1228,12 @@ version = "5.1.1+0"
 # ╟─8aa9c975-ff50-4db0-9939-7fee0cada96a
 # ╠═c3d99a5c-9c4c-4aff-b932-2dcc45a392ce
 # ╠═c4ab1370-cc66-4b54-901f-1c2680c01bf7
+# ╠═f3d5b031-748c-414b-b8a7-201039aa3ae5
 # ╠═716bb7f6-d341-4828-8e31-8b135f7c016a
 # ╠═296a64b9-7f7b-4ae2-adad-640be4879e7f
 # ╠═eef97e76-284b-456f-9ad8-9b86d87d6954
+# ╠═ed3bc04e-1178-4c04-9d35-3471f7b89c88
+# ╠═fd07c1d6-808e-4573-8ff9-e47b0ee68756
 # ╠═93497aa8-ba19-45fe-a596-dd5ef194229f
 # ╟─ee85e6c6-2ade-4178-8850-55e776916ac1
 # ╟─910c1e57-f7f0-4cb9-aa6c-826ff71e7b3a
