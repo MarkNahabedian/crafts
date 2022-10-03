@@ -736,6 +736,8 @@ end
 function chart_tablets(tablets::Vector{<:Tablet})
 	size = 5
 	m("svg", xmlns="http://www.w3.org/2000/svg",
+			 width="95%",
+			 # viewBox="0 0 $(length(tablets) * size) $(5 * size)",
 		[chart_tablet(tablet; size=size, x=size*(i-1))
 			for (i, tablet) in enumerate(tablets)]...)
 end
@@ -948,7 +950,7 @@ end
 length(make_diamond_tablets())
 
 # ╔═╡ fd07c1d6-808e-4573-8ff9-e47b0ee68756
-chart_tablets(make_diamond_tablets())
+(chart_tablets(make_diamond_tablets()))
 
 # ╔═╡ 93497aa8-ba19-45fe-a596-dd5ef194229f
 tablet_weave(make_diamond_tablets(), Forward(), 16)
@@ -1029,7 +1031,7 @@ end
 tablets_for_image(GRAY_PATTERN)
 
 # ╔═╡ 11ac0388-eadf-48c7-8ec9-2c4ce0f5169f
-let
+GRAY_TABLETS = let
 	border_color = RGB(0.5, 0.5, 0.5)
 	border1 = Tablet(
 		a=border_color,
@@ -1045,6 +1047,12 @@ let
 		threading=other(border1.threading))
 	(2 * border1) + tablets_for_image(GRAY_WEAVE) + (2 * border2)
 end
+
+# ╔═╡ a8673b72-a64f-44c9-8cc4-d12a1bff2a3a
+
+
+# ╔═╡ 2b6d73bc-dd88-4f4a-b739-58d57b189df6
+chart_tablets(GRAY_TABLETS)
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -1240,5 +1248,7 @@ version = "5.1.1+0"
 # ╠═6dc90672-f80e-4e2c-9689-7e777b03ff8d
 # ╠═4bd5b024-9be5-42f3-999b-6d9300003dd9
 # ╠═11ac0388-eadf-48c7-8ec9-2c4ce0f5169f
+# ╠═a8673b72-a64f-44c9-8cc4-d12a1bff2a3a
+# ╠═2b6d73bc-dd88-4f4a-b739-58d57b189df6
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
