@@ -1030,6 +1030,32 @@ end
 # ╔═╡ 4bd5b024-9be5-42f3-999b-6d9300003dd9
 tablets_for_image(GRAY_PATTERN)
 
+# ╔═╡ 24a0fb03-3cf5-46a2-83bc-92e2607a9216
+md"""
+`tablets_for_image` does nothing about tablet threading, only colors.
+
+The tablet weaving patterns I've been all seem to have one threading on one
+side of the pattern and another threading on the other side, with the
+possible exception of the borders having different threading from the field.
+
+We can introduce a function that sets one threading from the edge to the middle
+and switches to the other threading for the other half.
+"""
+
+# ╔═╡ f1f10056-0810-47cf-919b-b6aa93b361e0
+function symetric_threading!(tablets::Vector{<:Tablet};
+							 leftthreading::TabletThreading = BackToFront())
+	l = length(tablets)
+	middle = floor(Int, l / 2)
+	for i in 1 : middle
+		left = tablets[i]
+		right = tablets[l + 1 - i]
+		left.threading = leftthreading
+		right.threading = other(leftthreading)
+	end
+	tablets
+end
+
 # ╔═╡ 11ac0388-eadf-48c7-8ec9-2c4ce0f5169f
 GRAY_TABLETS = let
 	border_color = RGB(0.5, 0.5, 0.5)
@@ -1045,11 +1071,11 @@ GRAY_TABLETS = let
 		c=border1.c,
 		d=border1.d,
 		threading=other(border1.threading))
-	(2 * border1) + tablets_for_image(GRAY_WEAVE) + (2 * border2)
+	(2 * border1) +
+		symetric_threading!(tablets_for_image(GRAY_WEAVE);
+					leftthreading=other(border1.threading)) +
+		(2 * border2)
 end
-
-# ╔═╡ a8673b72-a64f-44c9-8cc4-d12a1bff2a3a
-
 
 # ╔═╡ 2b6d73bc-dd88-4f4a-b739-58d57b189df6
 chart_tablets(GRAY_TABLETS)
@@ -1247,8 +1273,9 @@ version = "5.1.1+0"
 # ╟─910c1e57-f7f0-4cb9-aa6c-826ff71e7b3a
 # ╠═6dc90672-f80e-4e2c-9689-7e777b03ff8d
 # ╠═4bd5b024-9be5-42f3-999b-6d9300003dd9
+# ╠═24a0fb03-3cf5-46a2-83bc-92e2607a9216
+# ╠═f1f10056-0810-47cf-919b-b6aa93b361e0
 # ╠═11ac0388-eadf-48c7-8ec9-2c4ce0f5169f
-# ╠═a8673b72-a64f-44c9-8cc4-d12a1bff2a3a
 # ╠═2b6d73bc-dd88-4f4a-b739-58d57b189df6
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
