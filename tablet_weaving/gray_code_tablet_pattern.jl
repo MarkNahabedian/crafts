@@ -569,15 +569,19 @@ end
 
 # ╔═╡ b396b71e-8510-4f7c-9017-50693b2f9c1d
 let
-	bf = Tablet(; a=:A, b=:B, c=:C, d=:D, threading=BackToFront())
+	bf = Tablet(; a=:A, b=:B, c=:C, d=:D,
+			threading=BackToFront(),
+			stacking=FrontToTheRight())
 	rotate!(bf, Forward())
 	@assert bf.this_shot_rotation == 1
 	rotate!(bf, Backward())
 	@assert bf.this_shot_rotation == 0
 	
-	fb = Tablet(; a=:A, b=:B, c=:C, d=:D, threading=FrontToBack())
+	fb = Tablet(; a=:A, b=:B, c=:C, d=:D,
+			threading=FrontToBack(),
+			stacking=FrontToTheRight())
 	rotate!(fb, Forward())
-	@assert fb.this_shot_rotation == -1
+	@assert fb.this_shot_rotation == 1
 	rotate!(fb, Backward())
 	@assert fb.this_shot_rotation == 0
 
@@ -589,7 +593,7 @@ let
 	
 	fb.stacking = FrontToTheLeft()
 	rotate!(fb, Forward())
-	@assert fb.this_shot_rotation == 1
+	@assert fb.this_shot_rotation == -1
 	rotate!(fb, Backward())
 	@assert fb.this_shot_rotation == 0
 
@@ -1382,9 +1386,9 @@ version = "5.1.1+0"
 # ╟─82725eaa-1605-4471-a808-360d0693dd43
 # ╟─71e0104b-beb4-4e3e-8def-218f88fdfbcd
 # ╟─b901fcdd-31dc-4643-9dba-21e70207141b
-# ╠═30c08bee-e3f9-4672-a4d6-29df3ba8a6e5
+# ╟─30c08bee-e3f9-4672-a4d6-29df3ba8a6e5
 # ╟─5498ffbc-40f9-44dd-9b6a-484e2498c406
-# ╠═6d796003-f336-44ed-8831-8ea2b56fe865
+# ╟─6d796003-f336-44ed-8831-8ea2b56fe865
 # ╠═1b7b4e33-97c3-4da6-ad86-b9b4646dc619
 # ╟─b396b71e-8510-4f7c-9017-50693b2f9c1d
 # ╟─ede7b3b1-5ec6-4abe-95c2-72b68552695a
