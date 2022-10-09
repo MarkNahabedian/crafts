@@ -435,18 +435,6 @@ Return the change in the `Tablet`'s `accumulated_rotation` if the specified
 """
 function rotation(::Tablet, ::RotationDirection) end
 
-# ╔═╡ 50e521b5-c4f7-464d-b6dd-5c7f9d5b4bd0
-"""
-    rotate!(::Tablet, ::RotationDirection)
-
-Rotate the tablet by one position in the specified direction.
-"""
-function rotate!(t::Tablet, d::RotationDirection)
-	new_rotation = rotation(t, d)
-	t.this_shot_rotation += new_rotation
-	return t
-end
-
 # ╔═╡ bb8a5f20-62af-4f28-b0df-85af57beb8f3
 """
 The ABCD rotation causes the A corner of the tablet to move to
@@ -466,16 +454,6 @@ struct DCBA <: RotationDirection end
 
 # ╔═╡ 748199f2-e5d8-4272-9120-f8b50264b5d6
 rotation(t::Tablet, ::DCBA) = -1
-
-# ╔═╡ e31dd514-64af-4491-aac2-b47a85372650
-let
-	bf = Tablet(; a=:A, b=:B, c=:C, d=:D, threading=BackToFront())
-	rotate!(bf, ABCD())
-	@assert bf.this_shot_rotation == 1
-	rotate!(bf, DCBA())
-	@assert bf.this_shot_rotation == 0
-	html"ABCD and DCBA assertions passed."
-end
 
 # ╔═╡ b38913ac-f91f-4e6d-a95a-506b8d3c754c
 """
@@ -512,23 +490,6 @@ function rotation(t::Tablet, ::CounterClockwise)
 	end
 end
 
-# ╔═╡ 71e0104b-beb4-4e3e-8def-218f88fdfbcd
-let
-	bf = Tablet(; a=:A, b=:B, c=:C, d=:D, threading=BackToFront())
-	rotate!(bf, Clockwise())
-	@assert bf.this_shot_rotation == 1
-	rotate!(bf, CounterClockwise())
-	@assert bf.this_shot_rotation == 0
-	
-	fb = Tablet(; a=:A, b=:B, c=:C, d=:D, threading=FrontToBack())
-	rotate!(fb, Clockwise())
-	@assert fb.this_shot_rotation == -1
-	rotate!(fb, CounterClockwise())
-	@assert fb.this_shot_rotation == 0
-
-	html"Clockwise and CounterClockwise rotate! assertions passed."
-end
-
 # ╔═╡ b901fcdd-31dc-4643-9dba-21e70207141b
 """
 The Forward rotation moves the top corner of the tablet closest to the
@@ -559,6 +520,45 @@ function rotation(t::Tablet, ::Backward)
 	else
 		rotation(t, DCBA())
 	end
+end
+
+# ╔═╡ 50e521b5-c4f7-464d-b6dd-5c7f9d5b4bd0
+"""
+    rotate!(::Tablet, ::RotationDirection)
+
+Rotate the tablet by one position in the specified direction.
+"""
+function rotate!(t::Tablet, d::RotationDirection)
+	new_rotation = rotation(t, d)
+	t.this_shot_rotation += new_rotation
+	return t
+end
+
+# ╔═╡ e31dd514-64af-4491-aac2-b47a85372650
+let
+	bf = Tablet(; a=:A, b=:B, c=:C, d=:D, threading=BackToFront())
+	rotate!(bf, ABCD())
+	@assert bf.this_shot_rotation == 1
+	rotate!(bf, DCBA())
+	@assert bf.this_shot_rotation == 0
+	html"ABCD and DCBA assertions passed."
+end
+
+# ╔═╡ 71e0104b-beb4-4e3e-8def-218f88fdfbcd
+let
+	bf = Tablet(; a=:A, b=:B, c=:C, d=:D, threading=BackToFront())
+	rotate!(bf, Clockwise())
+	@assert bf.this_shot_rotation == 1
+	rotate!(bf, CounterClockwise())
+	@assert bf.this_shot_rotation == 0
+	
+	fb = Tablet(; a=:A, b=:B, c=:C, d=:D, threading=FrontToBack())
+	rotate!(fb, Clockwise())
+	@assert fb.this_shot_rotation == -1
+	rotate!(fb, CounterClockwise())
+	@assert fb.this_shot_rotation == 0
+
+	html"Clockwise and CounterClockwise rotate! assertions passed."
 end
 
 # ╔═╡ 1b7b4e33-97c3-4da6-ad86-b9b4646dc619
@@ -1190,9 +1190,10 @@ begin
 		weaving_steps
 	end
 
-	function TabletWeavingPattern(title::AbstractString, image)
+	function TabletWeavingPattern(title::AbstractString, image;
+			threading_function = identity)
 		image = longer_dimension_counts_weft(image)
-		initial_tablets = tablets_for_image(image)
+		initial_tablets = threading_function(tablets_for_image(image))
 		pattern = tablet_rotation_plan(copy.(initial_tablets), image)
 		TabletWeavingPattern(title, image, initial_tablets, pattern)
 	end
@@ -1226,7 +1227,8 @@ end
 tablets(p::TabletWeavingPattern) = copy.(p.initial_tablets)
 
 # ╔═╡ bec2540b-b3e8-47a7-b968-769b8765d9ef
-pretty(TabletWeavingPattern("Gray Code Pattern", GRAY_WEAVE))
+pretty(TabletWeavingPattern("Gray Code Pattern", GRAY_WEAVE;
+	threading_function = symetric_threading!))
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
