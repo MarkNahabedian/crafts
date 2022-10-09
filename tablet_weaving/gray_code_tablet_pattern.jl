@@ -18,6 +18,24 @@ md"""
 # Gray Code Tablet Weaving Pattern
 """
 
+# ╔═╡ 581fda2d-0771-4283-8ca1-4b88cbeffecf
+# Given an array that represewnts an image we want to weave, which dimension
+# is the warp, and which is the weft?
+"""
+	longer_dimension_counts_weft(image)
+
+Return an image with the dimensions possibly permuted such that each increment
+in the first dimension counts a new row of the weft.  The second dimension
+indexes the color of the visible warp thread for that row.
+"""
+function longer_dimension_counts_weft(image)
+	if size(image)[1] < size(image)[2]
+		permutedims(image, [2, 1])
+	else
+		image
+	end
+end	
+
 # ╔═╡ 590963b9-bd0f-4c32-a778-873d22ec9c0f
 md"""
 ## Gray Code
@@ -417,6 +435,18 @@ Return the change in the `Tablet`'s `accumulated_rotation` if the specified
 """
 function rotation(::Tablet, ::RotationDirection) end
 
+# ╔═╡ 50e521b5-c4f7-464d-b6dd-5c7f9d5b4bd0
+"""
+    rotate!(::Tablet, ::RotationDirection)
+
+Rotate the tablet by one position in the specified direction.
+"""
+function rotate!(t::Tablet, d::RotationDirection)
+	new_rotation = rotation(t, d)
+	t.this_shot_rotation += new_rotation
+	return t
+end
+
 # ╔═╡ bb8a5f20-62af-4f28-b0df-85af57beb8f3
 """
 The ABCD rotation causes the A corner of the tablet to move to
@@ -436,6 +466,16 @@ struct DCBA <: RotationDirection end
 
 # ╔═╡ 748199f2-e5d8-4272-9120-f8b50264b5d6
 rotation(t::Tablet, ::DCBA) = -1
+
+# ╔═╡ e31dd514-64af-4491-aac2-b47a85372650
+let
+	bf = Tablet(; a=:A, b=:B, c=:C, d=:D, threading=BackToFront())
+	rotate!(bf, ABCD())
+	@assert bf.this_shot_rotation == 1
+	rotate!(bf, DCBA())
+	@assert bf.this_shot_rotation == 0
+	html"ABCD and DCBA assertions passed."
+end
 
 # ╔═╡ b38913ac-f91f-4e6d-a95a-506b8d3c754c
 """
@@ -472,6 +512,23 @@ function rotation(t::Tablet, ::CounterClockwise)
 	end
 end
 
+# ╔═╡ 71e0104b-beb4-4e3e-8def-218f88fdfbcd
+let
+	bf = Tablet(; a=:A, b=:B, c=:C, d=:D, threading=BackToFront())
+	rotate!(bf, Clockwise())
+	@assert bf.this_shot_rotation == 1
+	rotate!(bf, CounterClockwise())
+	@assert bf.this_shot_rotation == 0
+	
+	fb = Tablet(; a=:A, b=:B, c=:C, d=:D, threading=FrontToBack())
+	rotate!(fb, Clockwise())
+	@assert fb.this_shot_rotation == -1
+	rotate!(fb, CounterClockwise())
+	@assert fb.this_shot_rotation == 0
+
+	html"Clockwise and CounterClockwise rotate! assertions passed."
+end
+
 # ╔═╡ b901fcdd-31dc-4643-9dba-21e70207141b
 """
 The Forward rotation moves the top corner of the tablet closest to the
@@ -504,43 +561,10 @@ function rotation(t::Tablet, ::Backward)
 	end
 end
 
-# ╔═╡ 50e521b5-c4f7-464d-b6dd-5c7f9d5b4bd0
-"""
-    rotate!(::Tablet, ::RotationDirection)
-
-Rotate the tablet by one position in the specified direction.
-"""
-function rotate!(t::Tablet, d::RotationDirection)
-	new_rotation = rotation(t, d)
-	t.this_shot_rotation += new_rotation
-	return t
-end
-
-# ╔═╡ e31dd514-64af-4491-aac2-b47a85372650
-let
-	bf = Tablet(; a=:A, b=:B, c=:C, d=:D, threading=BackToFront())
-	rotate!(bf, ABCD())
-	@assert bf.this_shot_rotation == 1
-	rotate!(bf, DCBA())
-	@assert bf.this_shot_rotation == 0
-	html"ABCD and DCBA assertions passed."
-end
-
-# ╔═╡ 71e0104b-beb4-4e3e-8def-218f88fdfbcd
-let
-	bf = Tablet(; a=:A, b=:B, c=:C, d=:D, threading=BackToFront())
-	rotate!(bf, Clockwise())
-	@assert bf.this_shot_rotation == 1
-	rotate!(bf, CounterClockwise())
-	@assert bf.this_shot_rotation == 0
-	
-	fb = Tablet(; a=:A, b=:B, c=:C, d=:D, threading=FrontToBack())
-	rotate!(fb, Clockwise())
-	@assert fb.this_shot_rotation == -1
-	rotate!(fb, CounterClockwise())
-	@assert fb.this_shot_rotation == 0
-
-	html"Clockwise and CounterClockwise rotate! assertions passed."
+# ╔═╡ 1b7b4e33-97c3-4da6-ad86-b9b4646dc619
+begin
+	tablet_rotation_char(::Forward) = "🡑"
+	tablet_rotation_char(::Backward) = "🡓"
 end
 
 # ╔═╡ b396b71e-8510-4f7c-9017-50693b2f9c1d
@@ -973,9 +997,9 @@ described by unicode arrows (🡑, 🡓) or by the edge number of the tablet tha
 facing the shed or on top.  The latter is less error prone since an incorrect
 starting position for a tablet will be detected.
 
-The simplest representation is a `Vector` for for the whole pattern each throw.
-Each element would be a `Vector` of digits rfom `1` to `4` indicating the edg
-of the tablet that's at the back of the shed.
+The simplest representation is a `Vector` for the whole pattern.
+Each element would be a `Vector` of digits from `1` to `4` indicating the edge
+of the tablet that's currently "on top".
 """
 
 # ╔═╡ 910c1e57-f7f0-4cb9-aa6c-826ff71e7b3a
@@ -1001,16 +1025,15 @@ controlled though.
 Return a `Vector` of the `Tablet`s that could be used to weave the image, which should
 be a two dimensional array.  If the tablets can't be determined then an error is
 thrown.
-The shorter dimension of `image` will be the weft, the larger, the warp.
-The caller might need to adjust the threading of the tablets afterwards.
+The first dimension of `image` counts rows of weft.  The second dimension counts
+columns of warp, and therefore, tablets.
 """
 function tablets_for_image(image)
 	@assert length(size(image)) == 2
-	cardcount = minimum(size(image))
-	throwcount = maximum(size(image))
-	if size(image)[1] < size(image)[2]
-		image = permutedims(image, [2, 1])
-	end
+	cardcount = size(image)[2]
+	throwcount = size(image)[1]
+	@assert cardcount < throwcount
+	# The possible colors for each "column" of warp:
 	colors = [OrderedSet{Color}() for i in 1:cardcount]
 	for rownum in 1:throwcount
 		for cardnum in 1:cardcount
@@ -1028,7 +1051,7 @@ function tablets_for_image(image)
 end
 
 # ╔═╡ 4bd5b024-9be5-42f3-999b-6d9300003dd9
-tablets_for_image(GRAY_PATTERN)
+tablets_for_image(longer_dimension_counts_weft(GRAY_WEAVE))
 
 # ╔═╡ 24a0fb03-3cf5-46a2-83bc-92e2607a9216
 md"""
@@ -1072,13 +1095,134 @@ GRAY_TABLETS = let
 		d=border1.d,
 		threading=other(border1.threading))
 	(2 * border1) +
-		symetric_threading!(tablets_for_image(GRAY_WEAVE);
+		symetric_threading!(tablets_for_image(
+			longer_dimension_counts_weft(GRAY_WEAVE));
 					leftthreading=other(border1.threading)) +
 		(2 * border2)
 end
 
 # ╔═╡ 2b6d73bc-dd88-4f4a-b739-58d57b189df6
 chart_tablets(GRAY_TABLETS)
+
+# ╔═╡ 02798c2e-3d12-4eff-90f8-e24a631ad8f0
+"""
+	want_color(::Tablet, color)
+
+return the new top edge if the tablet is rotated so that the stitch
+will come out the specified color.  `want_color` is used to turn an
+image into a weaving pattern.
+"""
+function want_color(tablet::Tablet{T}, color::T) where T
+	e = top_edge(tablet)
+	c_next = warp_color(tablet, next_hole(e))
+	c_prev = warp_color(tablet, previous_hole(e))
+	# If both colors are the same, which direction should we prefer?
+	# Probably the one that is towards 0 accumulated twist.
+	want_rotation =
+		if c_next == c_prev
+			- sign(tablet.accumulated_rotation)
+		elseif color == c_next
+			-1
+		elseif color == c_prev
+			1
+		else
+			error("Can't match color $c with tablet $tablet.")
+		end
+	if want_rotation == 0
+		want_rotation = 1
+	end
+	new_edge = if want_rotation == 1
+		previous(e)
+	else
+		next(e)
+	end
+	rot::RotationDirection = Forward()
+	for r in [Forward(), Backward()]
+		if rotation(tablet, r) == want_rotation
+			rot = r
+			break
+		end
+	end
+	return new_edge, rot
+end
+
+# ╔═╡ 432d26a6-bac4-48b8-a0ab-1bb1c246d513
+let
+	tablet = GRAY_TABLETS[5]
+	red = tablet.a
+	yellow = tablet.b
+	red, yellow #=
+	@assert want_color(tablet, red) == (TabletEdge(4), Forward())
+	@assert want_color(tablet, yellow) == (TabletEdge(2), Backward())
+	html"want_color tests pass."
+	=#
+end
+
+# ╔═╡ 35648d58-0c47-4197-94ca-0585d06ed709
+function tablet_rotation_plan(tablets::Vector{<:Tablet}, image)
+	@assert length(tablets) == size(image)[2]
+	plan = []
+	tablets = copy.(tablets)
+	for row in 1:(size(image)[1])
+		motion = []
+		for (col, t) in enumerate(tablets)
+			color = image[row, col]
+			(edge, rotation) = want_color(t, color)
+			push!(motion, (edge, rotation))
+			rotate!(t, rotation)
+		end
+		shot!.(tablets)
+		push!(plan, motion)
+	end
+	plan
+end
+
+# ╔═╡ ad13c3e7-5102-4f7d-99d1-6deea22a2ec5
+begin
+	struct TabletWeavingPattern{C} # where C causes "invalid type signature" error
+		title::AbstractString
+		image::Array{C, 2}
+		initial_tablets::Vector{<:Tablet{<:C}}
+		weaving_steps
+	end
+
+	function TabletWeavingPattern(title::AbstractString, image)
+		image = longer_dimension_counts_weft(image)
+		initial_tablets = tablets_for_image(image)
+		pattern = tablet_rotation_plan(copy.(initial_tablets), image)
+		TabletWeavingPattern(title, image, initial_tablets, pattern)
+	end
+end
+
+# ╔═╡ 2f1e5906-300d-4c35-84a4-4b1ced9390b7
+function pretty_plan(p::TabletWeavingPattern)
+	m("table",
+		[
+		m("tr",
+			m("td", i),
+			[
+				m("td",
+					tablet_rotation_char(t[2]),
+					t[1].label)
+				for t in step
+			]...)
+			for (i, step) in enumerate(p.weaving_steps)
+		]...)		
+end
+
+# ╔═╡ 8d8e5ec7-3177-4e64-ab6d-791dbf0a06c4
+function pretty(p::TabletWeavingPattern)
+	m("div",
+		m("h2", p.title),
+		m("div", chart_tablets(p.initial_tablets)),
+		m("div", pretty_plan(p)))
+end
+
+# ╔═╡ 4d45dbf1-41cf-4568-b099-789630effce3
+tablets(p::TabletWeavingPattern) = copy.(p.initial_tablets)
+
+# ╔═╡ bec2540b-b3e8-47a7-b968-769b8765d9ef
+pretty(TabletWeavingPattern("Gray Code Pattern", GRAY_WEAVE))
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -1202,6 +1346,7 @@ version = "5.1.1+0"
 # ╔═╡ Cell order:
 # ╟─89e97690-18a6-11ed-15e4-4bb0cd5b7c50
 # ╠═9c0b434e-571c-4181-9350-848d50ba42e9
+# ╠═581fda2d-0771-4283-8ca1-4b88cbeffecf
 # ╟─590963b9-bd0f-4c32-a778-873d22ec9c0f
 # ╠═a3b3c00d-425d-4437-b964-50946b7e75b3
 # ╠═e147b976-9227-4d54-8b14-f05d8eb0d42e
@@ -1221,7 +1366,7 @@ version = "5.1.1+0"
 # ╠═a5796f2d-3754-4d99-9a37-2b476cc4f5a2
 # ╟─31bdd4ca-aa24-4600-9a72-36410636019b
 # ╠═bf12e28b-6bd1-45e3-9cea-e81d412c0097
-# ╠═40bd184d-3332-49c0-a349-64b4e5fcc4aa
+# ╟─40bd184d-3332-49c0-a349-64b4e5fcc4aa
 # ╟─56453fbd-6f6a-4c11-b2ba-acae84b66f48
 # ╟─86033a92-cd04-4c52-845d-89a8a473506c
 # ╟─f1c8a4c6-6c22-49f4-9df1-ef3ae5e3cb40
@@ -1240,6 +1385,7 @@ version = "5.1.1+0"
 # ╠═30c08bee-e3f9-4672-a4d6-29df3ba8a6e5
 # ╟─5498ffbc-40f9-44dd-9b6a-484e2498c406
 # ╠═6d796003-f336-44ed-8831-8ea2b56fe865
+# ╠═1b7b4e33-97c3-4da6-ad86-b9b4646dc619
 # ╟─b396b71e-8510-4f7c-9017-50693b2f9c1d
 # ╟─ede7b3b1-5ec6-4abe-95c2-72b68552695a
 # ╟─e275a226-c404-4e8b-a9de-2b126da4b452
@@ -1273,9 +1419,17 @@ version = "5.1.1+0"
 # ╟─910c1e57-f7f0-4cb9-aa6c-826ff71e7b3a
 # ╠═6dc90672-f80e-4e2c-9689-7e777b03ff8d
 # ╠═4bd5b024-9be5-42f3-999b-6d9300003dd9
-# ╠═24a0fb03-3cf5-46a2-83bc-92e2607a9216
+# ╟─24a0fb03-3cf5-46a2-83bc-92e2607a9216
 # ╠═f1f10056-0810-47cf-919b-b6aa93b361e0
 # ╠═11ac0388-eadf-48c7-8ec9-2c4ce0f5169f
 # ╠═2b6d73bc-dd88-4f4a-b739-58d57b189df6
+# ╟─02798c2e-3d12-4eff-90f8-e24a631ad8f0
+# ╠═432d26a6-bac4-48b8-a0ab-1bb1c246d513
+# ╠═35648d58-0c47-4197-94ca-0585d06ed709
+# ╠═8d8e5ec7-3177-4e64-ab6d-791dbf0a06c4
+# ╠═2f1e5906-300d-4c35-84a4-4b1ced9390b7
+# ╠═ad13c3e7-5102-4f7d-99d1-6deea22a2ec5
+# ╠═4d45dbf1-41cf-4568-b099-789630effce3
+# ╠═bec2540b-b3e8-47a7-b968-769b8765d9ef
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
