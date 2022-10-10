@@ -188,6 +188,9 @@ end
 	stacking::TabletStacking = FrontToTheRight()
 	accumulated_rotation::Int = 0
 	this_shot_rotation::Int = 0
+	# It is helpful to know the range of thread twist imposed by a weaving pattern:
+	min_rotation = 0
+	max_rotation = 0
 end
 
 # ╔═╡ 61de53db-f01d-4294-8baf-d570abcd8d15
@@ -195,6 +198,8 @@ function copy(t::Tablet)
 	@assert t.id == nothing
 	@assert t.accumulated_rotation == 0
 	@assert t.this_shot_rotation == 0
+	@assert t.min_rotation == 0
+	@assert t.max_rotation == 0
 	Tablet(;
 		id = t.id,
 		a = t.a,
@@ -653,6 +658,8 @@ function shot!(t::Tablet)
 	te = top_edge(t)
 	be = opposite(te)
 	t.accumulated_rotation += t.this_shot_rotation
+	t.min_rotation = min(t.min_rotation, t.accumulated_rotation)
+	t.max_rotation = min(t.max_rotation, t.accumulated_rotation)
 	hole = if t.this_shot_rotation > 0
 		if t.threading isa BackToFront
 			stitchslant = '/'
@@ -1178,7 +1185,7 @@ function tablet_rotation_plan(tablets::Vector{<:Tablet}, image)
 		shot!.(tablets)
 		push!(plan, motion)
 	end
-	plan
+	plan, tablets
 end
 
 # ╔═╡ ad13c3e7-5102-4f7d-99d1-6deea22a2ec5
@@ -1188,14 +1195,15 @@ begin
 		image::Array{C, 2}
 		initial_tablets::Vector{<:Tablet{<:C}}
 		weaving_steps
+		end_tablets
 	end
 
 	function TabletWeavingPattern(title::AbstractString, image;
 			threading_function = identity)
 		image = longer_dimension_counts_weft(image)
 		initial_tablets = threading_function(tablets_for_image(image))
-		pattern = tablet_rotation_plan(copy.(initial_tablets), image)
-		TabletWeavingPattern(title, image, initial_tablets, pattern)
+		pattern, end_tablets = tablet_rotation_plan(copy.(initial_tablets), image)
+		TabletWeavingPattern(title, image, initial_tablets, pattern, end_tablets)
 	end
 end
 
@@ -1204,7 +1212,7 @@ function pretty_plan(p::TabletWeavingPattern)
 	m("table",
 		[
 		m("tr",
-			m("td", i),
+			m("th", i),
 			[
 				m("td",
 					tablet_rotation_char(t[2]),
@@ -1212,7 +1220,23 @@ function pretty_plan(p::TabletWeavingPattern)
 				for t in step
 			]...)
 			for (i, step) in enumerate(p.weaving_steps)
-		]...)		
+		]...,
+		m("tr",
+			m("th", "end"),
+			[ m("td", t.accumulated_rotation) 
+			  for t in p.end_tablets
+			]...),
+		m("tr",
+			m("th", "min"),
+			[ m("td", t.min_rotation)
+			  for t in p.end_tablets
+			]...),
+		m("tr",
+			m("th", "max"),
+			[ m("td", t.max_rotation) 
+			  for t in p.end_tablets
+			]...)
+		)
 end
 
 # ╔═╡ 8d8e5ec7-3177-4e64-ab6d-791dbf0a06c4
