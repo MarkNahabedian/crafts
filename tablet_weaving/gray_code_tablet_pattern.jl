@@ -894,49 +894,105 @@ make_chevron_tablets()
 # ╔═╡ f3d5b031-748c-414b-b8a7-201039aa3ae5
 chart_tablets(make_chevron_tablets())
 
-# ╔═╡ 716bb7f6-d341-4828-8e31-8b135f7c016a
-function tablet_weave(tablets, rotation::RotationDirection, count::Int)
-	tapestry_top = []
-	tapestry_bottom = []
-	rotations = []
-	stitchlength, stitchwidth = 4, 3
-	blank = Gray(0.25)
-	for row in 1 : count
-		push!(rotations,
-			transpose(map(tablets) do t
-				t.accumulated_rotation
-			end)
-		)
-		# Form the new shed:
-		map(tablets) do t
-			rotate!(t, rotation)
+# ╔═╡ 38e5dcdb-e192-4c89-9e49-c8a5ad2fcb3c
+"""
+    simple_rotation_plan(row_count::Int, rotation_direction::RotationDirection)
+
+return a simple rotation plan function, as could be passed to `tablet_weaving`.
+"""
+function simple_rotation_plan(row_count::Int, rotation_direction::RotationDirection)
+	function plan(tablets::Vector{<:Tablet}, row_number::Int, tablet_number::Int)
+		if row_number <= row_count
+			return rotation_direction
+		else
+			return nothing
 		end
-		# Throw the weft:
-		weave = map(shot!, tablets)
-		push!(tapestry_top,
-			map(weave) do w
-				top, bottom, slant = w
-				color_stitch(stitch_image(stitchlength, stitchwidth, slant),
-							 top, blank)
-			end)
-		push!(tapestry_bottom,
-			map(weave) do w
-				top, bottom, slant = w
-				color_stitch(stitch_image(stitchlength, stitchwidth, slant),
-							 bottom, blank)
-			end)
 	end
-	return vcat(map(tapestry_top) do row
-					hcat(row...)
-				end),
-		   vcat(map(tapestry_bottom) do row
-		   			hcat(row...)
-		   end),
-		   rotations
 end
 
-# ╔═╡ 296a64b9-7f7b-4ae2-adad-640be4879e7f
-tablet_weave(make_chevron_tablets(), Forward(), 16)
+# ╔═╡ cacc40ec-08f8-4b92-ac40-e1496ccd9410
+"""
+	tablet_weave(tablets::Vector{<:Tablet}, rotation_plan)
+
+Simulate the weaving of and item that is warped according to `tablets` and is
+woken according to `rotation_plan`.
+
+`rotation_plan` is a function of three arguments:
+
+* a vector of the tablets;
+
+* the row number of the warp being formed;
+
+* the number of the tablet, counted from the weaver's left.
+
+It should return a RotationDirection.
+
+`tablet_weave` rotates the tablets according to the plan function, steping the
+row number until `rotation_plan` returns `nothing`.
+
+`tablet_weave` returns several values:
+
+* an array of the stitch color and slant, from which an image of the top face of the result can be made;
+
+* the same, but for the bottom face of the result;
+
+* a vector with one element per weft row, each element of which is a vector with
+one element per tablet, giving the rotation that was applied to that tablet and its new top edge after applying that rotation, as a tuple.
+
+"""
+function tablet_weave(tablets::Vector{<:Tablet}, rotation_plan)
+	tapestry_top = []
+	tapestry_bottom = []
+	instructions = []
+	row = 1
+	while true
+		rotations = []
+		for column in 1 : length(tablets)
+			rot = rotation_plan(tablets, row, column)
+			if rot == nothing
+				@goto done
+			end
+			rotate!(tablets[column], rot)
+			push!(rotations, rot)
+		end
+		weave = shot!.(tablets)
+		push!(tapestry_top, map(weave) do (top, bottom, slant)
+			(top, slant)
+		end)
+		push!(tapestry_bottom, map(weave) do (top, bottom, slant)
+			(bottom, slant)
+		end)
+		push!(instructions, collect(zip(rotations, top_edge.(tablets))))
+		row += 1
+	end
+	@label done
+	return tapestry_top, tapestry_bottom, instructions
+end
+
+# ╔═╡ 517d7d7a-c31d-4917-8db9-ff7eb68e1bd5
+"""
+	weaving_image(face; stitchlength = 5, stitchwidth = 3, blank = Gray(0.25))
+
+Return an image array derived from `face`. which is as would be returned as the
+first or second return value of `tablet_weave`.
+"""
+function weaving_image(face;
+		stitchlength = 5, stitchwidth = 3, blank = Gray(0.25))
+	vcat(map(face) do row
+		hcat(map(row) do w
+			color, slant = w
+			color_stitch(stitch_image(stitchlength, stitchwidth, slant),
+						 color, blank)
+		end...)
+	end)
+end
+
+# ╔═╡ 454626a9-f96b-4d2d-adff-1cc24e2b423f
+let
+	top, bottom, instructions =
+		tablet_weave(make_chevron_tablets(), simple_rotation_plan(16, Forward()))
+	weaving_image(top), weaving_image(bottom)
+end
 
 # ╔═╡ eef97e76-284b-456f-9ad8-9b86d87d6954
 # Lets try a different pottern, from http://research.fibergeek.com/2002/10/10/first-tablet-weaving-double-diamonds/
@@ -988,7 +1044,11 @@ length(make_diamond_tablets())
 (chart_tablets(make_diamond_tablets()))
 
 # ╔═╡ 93497aa8-ba19-45fe-a596-dd5ef194229f
-tablet_weave(make_diamond_tablets(), Forward(), 16)
+let
+	top, bottom, instructions =
+		tablet_weave(make_diamond_tablets(), simple_rotation_plan(16, Forward()))
+	weaving_image(top), weaving_image(bottom)
+end
 
 # ╔═╡ ee85e6c6-2ade-4178-8850-55e776916ac1
 md"""
@@ -1169,25 +1229,6 @@ let
 	=#
 end
 
-# ╔═╡ 35648d58-0c47-4197-94ca-0585d06ed709
-function tablet_rotation_plan(tablets::Vector{<:Tablet}, image)
-	@assert length(tablets) == size(image)[2]
-	plan = []
-	tablets = copy.(tablets)
-	for row in 1:(size(image)[1])
-		motion = []
-		for (col, t) in enumerate(tablets)
-			color = image[row, col]
-			(edge, rotation) = want_color(t, color)
-			push!(motion, (edge, rotation))
-			rotate!(t, rotation)
-		end
-		shot!.(tablets)
-		push!(plan, motion)
-	end
-	plan, tablets
-end
-
 # ╔═╡ ad13c3e7-5102-4f7d-99d1-6deea22a2ec5
 begin
 	struct TabletWeavingPattern{C} # where C causes "invalid type signature" error
@@ -1196,14 +1237,32 @@ begin
 		initial_tablets::Vector{<:Tablet{<:C}}
 		weaving_steps
 		end_tablets
+		top_image_stitches
+		bottom_image_stitches
 	end
 
+	function rotation_plan_from_image(image, tablets)
+		tablets = copy.(tablets)
+		function plan(tablets, row, column)
+			if row > size(image)[1]
+				return nothing
+			end
+			color = image[row, column]
+	    	(edge, rotation) = want_color(tablets[column], color)
+	    	rotation
+		end
+		plan
+	end
+	
 	function TabletWeavingPattern(title::AbstractString, image;
 			threading_function = identity)
 		image = longer_dimension_counts_weft(image)
 		initial_tablets = threading_function(tablets_for_image(image))
-		pattern, end_tablets = tablet_rotation_plan(copy.(initial_tablets), image)
-		TabletWeavingPattern(title, image, initial_tablets, pattern, end_tablets)
+		tablets = copy.(initial_tablets)
+		top, bottom, instructions = tablet_weave(tablets,rotation_plan_from_image(image, tablets))
+		
+		TabletWeavingPattern(title, image, initial_tablets, instructions, tablets,
+			top, bottom)
 	end
 end
 
@@ -1212,28 +1271,28 @@ function pretty_plan(p::TabletWeavingPattern)
 	m("table",
 		[
 		m("tr",
-			m("th", i),
+			m("th", align="right", i),
 			[
-				m("td",
-					tablet_rotation_char(t[2]),
-					t[1].label)
+				m("td", align="right",
+					tablet_rotation_char(t[1]),
+					t[2].label)
 				for t in step
 			]...)
 			for (i, step) in enumerate(p.weaving_steps)
 		]...,
 		m("tr",
-			m("th", "end"),
-			[ m("td", t.accumulated_rotation) 
+			m("th", align="right",  "end"),
+			[ m("td", align="right", t.accumulated_rotation) 
 			  for t in p.end_tablets
 			]...),
 		m("tr",
-			m("th", "min"),
-			[ m("td", t.min_rotation)
+			m("th", align="right", "min"),
+			[ m("td", align="right", t.min_rotation)
 			  for t in p.end_tablets
 			]...),
 		m("tr",
-			m("th", "max"),
-			[ m("td", t.max_rotation) 
+			m("th", align="right", "max"),
+			[ m("td", align="right", t.max_rotation) 
 			  for t in p.end_tablets
 			]...)
 		)
@@ -1420,7 +1479,7 @@ version = "5.1.1+0"
 # ╟─ede7b3b1-5ec6-4abe-95c2-72b68552695a
 # ╟─e275a226-c404-4e8b-a9de-2b126da4b452
 # ╠═f7e02d45-6de4-408c-99a0-ecaa274c6f39
-# ╠═ea0b660e-9512-4ad1-b99a-e17753f47d74
+# ╟─ea0b660e-9512-4ad1-b99a-e17753f47d74
 # ╟─776e4a65-62f7-4201-b8e5-6d5326e653fa
 # ╠═98bb29dc-55e7-4f42-8456-d72079801a3a
 # ╟─c6a06609-bf84-45cb-a837-68760b826cb3
@@ -1439,8 +1498,10 @@ version = "5.1.1+0"
 # ╠═c3d99a5c-9c4c-4aff-b932-2dcc45a392ce
 # ╠═c4ab1370-cc66-4b54-901f-1c2680c01bf7
 # ╠═f3d5b031-748c-414b-b8a7-201039aa3ae5
-# ╠═716bb7f6-d341-4828-8e31-8b135f7c016a
-# ╠═296a64b9-7f7b-4ae2-adad-640be4879e7f
+# ╟─38e5dcdb-e192-4c89-9e49-c8a5ad2fcb3c
+# ╠═cacc40ec-08f8-4b92-ac40-e1496ccd9410
+# ╟─517d7d7a-c31d-4917-8db9-ff7eb68e1bd5
+# ╠═454626a9-f96b-4d2d-adff-1cc24e2b423f
 # ╠═eef97e76-284b-456f-9ad8-9b86d87d6954
 # ╠═ed3bc04e-1178-4c04-9d35-3471f7b89c88
 # ╠═fd07c1d6-808e-4573-8ff9-e47b0ee68756
@@ -1455,7 +1516,6 @@ version = "5.1.1+0"
 # ╠═2b6d73bc-dd88-4f4a-b739-58d57b189df6
 # ╟─02798c2e-3d12-4eff-90f8-e24a631ad8f0
 # ╠═432d26a6-bac4-48b8-a0ab-1bb1c246d513
-# ╠═35648d58-0c47-4197-94ca-0585d06ed709
 # ╠═8d8e5ec7-3177-4e64-ab6d-791dbf0a06c4
 # ╠═2f1e5906-300d-4c35-84a4-4b1ced9390b7
 # ╠═ad13c3e7-5102-4f7d-99d1-6deea22a2ec5
