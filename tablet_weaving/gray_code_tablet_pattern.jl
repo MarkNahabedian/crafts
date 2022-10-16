@@ -11,6 +11,7 @@ begin
 	using Markdown
 	using Hyperscript
 	using OrderedCollections
+	using LinearAlgebra
 end
 
 # ╔═╡ 89e97690-18a6-11ed-15e4-4bb0cd5b7c50
@@ -1313,11 +1314,103 @@ tablets(p::TabletWeavingPattern) = copy.(p.initial_tablets)
 pretty(TabletWeavingPattern("Gray Code Pattern", GRAY_WEAVE;
 	threading_function = symetric_threading!))
 
+# ╔═╡ 2247a5df-98f8-4d63-8443-2a1cb743aa8b
+let
+    stitch_width = 5               # x direction
+    stitch_length = 5 * sqrt(3)    # y direction
+    center = [
+        stitch_width / 2,
+        stitch_length / 2
+    ]
+    stitch_radius =  stitch_width / 6    # arbitrary
+
+    circle1_center = [
+        stitch_radius,
+        stitch_length - stitch_radius
+    ]
+    circle2_center = [
+        stitch_width - stitch_radius,
+        stitch_radius
+    ]
+
+    # we can translate the center of each circle by +/= the vector
+    # perpendicular to this angle:
+    diagonal = circle2_center - circle1_center
+    trans = [ - diagonal[2], diagonal[1] ]    # perpendicular
+    trans = trans / norm(trans)               # unit vector
+    trans = trans * stitch_radius
+
+    guide_style = join(
+        [
+            "stroke: blue",
+            "stroke-width: 1px",
+            "fill: none",
+            "vector-effect: non-scaling-stroke"
+        ], "; ")
+    stitch_style = join(
+        [
+            "fill: none",
+            "stroke: yellow",
+            "stroke-width: 1px",
+            "vector-effect: non-scaling-stroke"
+        ], "; ")
+
+    function line(p1, p2, style)
+        m("line",
+          x1 = p1[1],
+          y1 = p1[2],
+          x2 = p2[1],
+          y2 = p2[2],
+          style = style)
+    end
+
+    m("svg", xmlns="http://www.w3.org/2000/svg",
+      viewBox="0 0 $(2 * stitch_width) $(2 * stitch_length)",
+      width="50%",
+      # bounding rectangle:
+      m("rect",
+        x = 0,
+        y = 0,
+        width = stitch_width,
+        height = stitch_length,
+        style = guide_style
+        ),
+      # Diagonal:
+      line(circle1_center, circle2_center, guide_style),
+      # Normals:
+      line(circle1_center, circle1_center + trans, guide_style),
+      line(circle2_center, circle2_center + trans, guide_style),
+      # circle1:
+      m("circle",
+        style = stitch_style,
+        r = stitch_radius,
+        cx = circle1_center[1],
+        cy = circle1_center[2]
+        ),
+      # circle2:
+      m("circle",
+        style = stitch_style,
+        r = stitch_radius,
+        cx = circle2_center[1],
+        cy = circle2_center[2]
+        ),
+      # lines:
+      line(circle1_center + trans,
+           circle2_center + trans,
+           stitch_style),
+      line(circle1_center - trans,
+           circle2_center - trans,
+           stitch_style)
+    )
+end
+
+
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
 [deps]
 Colors = "5ae59095-9a9b-59fe-a467-6f913c188581"
 Hyperscript = "47d2ed2b-36de-50cf-bf87-49c2cf4b8b91"
+LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 Markdown = "d6f4376e-aef5-505a-96c1-9c027394607a"
 OrderedCollections = "bac558e1-5e72-5ebc-8fee-abe8a469f55d"
 
@@ -1333,7 +1426,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.8.0"
 manifest_format = "2.0"
-project_hash = "dddd2fb162cfbc4888d0b85d4e919735f9e18768"
+project_hash = "75259bf92e773de940b4bad4bda1529b290ec6f6"
 
 [[deps.Artifacts]]
 uuid = "56f22d72-fd6d-98f1-02f0-08ddc0907c33"
@@ -1521,5 +1614,6 @@ version = "5.1.1+0"
 # ╠═ad13c3e7-5102-4f7d-99d1-6deea22a2ec5
 # ╠═4d45dbf1-41cf-4568-b099-789630effce3
 # ╠═bec2540b-b3e8-47a7-b968-769b8765d9ef
+# ╠═2247a5df-98f8-4d63-8443-2a1cb743aa8b
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
