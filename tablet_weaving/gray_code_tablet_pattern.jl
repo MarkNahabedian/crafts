@@ -1454,7 +1454,6 @@ function svg_stitch(stitch_width, stitch_length,
         ], "; ")
     stitch_style = join(
         [
-            "fill: none",
             "stroke: yellow",
             "stroke-width: 1px",
             "vector-effect: non-scaling-stroke"
@@ -1490,9 +1489,10 @@ function svg_stitch(stitch_width, stitch_length,
     p3 = circle2 - trans
     p4 = circle1 - trans
     pathpoint(p) = join(string.(p), " ")
-    m("svg", xmlns="http://www.w3.org/2000/svg",
-      viewBox="0 0 $(2 * stitch_width) $(2 * stitch_length)",
-      width="50%",
+
+    m("g",
+      # viewBox="0 0 $(2 * stitch_width) $(2 * stitch_length)",
+      # width="50%",
       guides...,
 
       m("path",
@@ -1515,7 +1515,27 @@ end
 
 
 # ╔═╡ abb9e8cd-564e-4fef-afd4-7f05eb76a944
-(svg_stitch(2, 3, 1, '/';))
+m("svg", xmlns="http://www.w3.org/2000/svg",
+  width="50%",
+  viewBox="0 0 100 100",
+  m("symbol", id="stitch1",
+    viewBox="0 0 2 3",
+    svg_stitch(2, 3, 1, '/';)),
+  m("symbol", id="stitch2",
+    viewBox="0 0 2 3",
+    svg_stitch(2, 3, 1, '\\';)),
+
+  m("use" , href="#stitch1", x="10mm", y="10mm", width="2mm", height="3mm", style="stroke: none; fill: yellow"),
+  m("use" , href="#stitch1", x="12mm", y="10mm", width="2mm", height="3mm", style="stroke: none; fill: blue"),
+  m("use" , href="#stitch2", x="14mm", y="10mm", width="2mm", height="3mm", style="stroke: none; fill: yellow"),
+  m("use" , href="#stitch2", x="16mm", y="10mm", width="2mm", height="3mm", style="stroke: none; fill: blue"),
+
+  m("use" , href="#stitch1", x="10mm", y="13mm", width="2mm", height="3mm", style="stroke: none; fill: yellow"),
+  m("use" , href="#stitch1", x="12mm", y="13mm", width="2mm", height="3mm", style="stroke: none; fill: blue"),
+  m("use" , href="#stitch2", x="14mm", y="13mm", width="2mm", height="3mm", style="stroke: none; fill: yellow"),
+  m("use" , href="#stitch2", x="16mm", y="13mm", width="2mm", height="3mm", style="stroke: none; fill: blue")
+  )
+
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
