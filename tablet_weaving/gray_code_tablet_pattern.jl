@@ -1238,6 +1238,10 @@ begin
 		initial_tablets::Vector{<:Tablet{<:C}}
 		weaving_steps
 		end_tablets
+		# top_image_stitches and bottom_image_stitches each are a vector
+		# (one element per row) of vectors (one element per stitch) of the
+		# stitch color and slant, from which an image of the top or bottom
+		# face of the result can be made:
 		top_image_stitches
 		bottom_image_stitches
 	end
@@ -1260,7 +1264,8 @@ begin
 		image = longer_dimension_counts_weft(image)
 		initial_tablets = threading_function(tablets_for_image(image))
 		tablets = copy.(initial_tablets)
-		top, bottom, instructions = tablet_weave(tablets,rotation_plan_from_image(image, tablets))
+		top, bottom, instructions =
+			tablet_weave(tablets, rotation_plan_from_image(image, tablets))
 		
 		TabletWeavingPattern(title, image, initial_tablets, instructions, tablets,
 			top, bottom)
@@ -1299,20 +1304,12 @@ function pretty_plan(p::TabletWeavingPattern)
 		)
 end
 
-# ╔═╡ 8d8e5ec7-3177-4e64-ab6d-791dbf0a06c4
-function pretty(p::TabletWeavingPattern)
-	m("div",
-		m("h2", p.title),
-		m("div", chart_tablets(p.initial_tablets)),
-		m("div", pretty_plan(p)))
-end
-
 # ╔═╡ 4d45dbf1-41cf-4568-b099-789630effce3
 tablets(p::TabletWeavingPattern) = copy.(p.initial_tablets)
 
 # ╔═╡ bec2540b-b3e8-47a7-b968-769b8765d9ef
-pretty(TabletWeavingPattern("Gray Code Pattern", GRAY_WEAVE;
-	threading_function = symetric_threading!))
+WOVEN_GRAY_PATTERN = TabletWeavingPattern("Gray Code Pattern", GRAY_WEAVE;
+	threading_function = symetric_threading!)
 
 # ╔═╡ 2247a5df-98f8-4d63-8443-2a1cb743aa8b
 let
@@ -1454,7 +1451,7 @@ function svg_stitch(stitch_width, stitch_length,
         ], "; ")
     stitch_style = join(
         [
-            "stroke: yellow",
+            # "stroke: yellow",
             "stroke-width: 1px",
             "vector-effect: non-scaling-stroke"
         ], "; ")
@@ -1514,15 +1511,84 @@ function svg_stitch(stitch_width, stitch_length,
 end
 
 
+# ╔═╡ a38a5557-7a7d-49d3-8041-7a6d655e6a37
+function pretty_stitches(image_stitches, flip_right_to_left::Bool)
+    # image_stitches should be the top_image_stitches or bottom_image_stitches
+    # of a TabletWeavingPattern.
+    stitch_width = 5
+    stitch_length = 10
+    stitch_diameter = 1
+    uses = []
+    function use(row, col, color, slant)
+	push!(uses,
+	      m("use",
+		href = slant == '/' ? "#stitch1" : "#stitch2",
+		x="$(col * stitch_width)mm",
+		y="$(row * stitch_length)mm",
+		width="$(stitch_width)mm",
+		height="$(stitch_length)mm",
+		style="stroke: none; fill: $(color)"))
+    end
+    for (rownum, row) in enumerate(image_stitches)
+	for (colnum, stitch) in enumerate(row)
+	    (color, slant) = stitch
+	    use(rownum, colnum, color, slant)
+	end
+    end
+    println(length(uses))
+    m("svg", 
+      viewBox="0 0 $(stitch_width * length(image_stitches[1])) $(stitch_length * length(image_stitches))",
+		m("g",
+      m("symbol", id="stitch1",
+    	preserveAspectRatio="xMinYMin",
+    	viewBox="0 0 $(stitch_width) $(stitch_length)",
+    	refX="0", refY="0",
+    	svg_stitch(stitch_width, stitch_length, stitch_diameter, '/';)),
+      m("symbol", id="stitch2",
+    	preserveAspectRatio="xMinYMin",
+    	viewBox="0 0 $(stitch_width) $(stitch_length)",
+    	refX="0", refY="0",
+    	svg_stitch(stitch_width, stitch_length, stitch_diameter, '\\';)),
+      uses...)
+      )
+end
+
+
+# ╔═╡ 8d8e5ec7-3177-4e64-ab6d-791dbf0a06c4
+function pretty(p::TabletWeavingPattern)
+	m("div",
+		m("h2", p.title),
+		m("div", chart_tablets(p.initial_tablets)),
+		m("div", pretty_plan(p)),
+		m("h3", "Front"),
+		pretty_stitches(p.top_image_stitches, false),
+		m("h3", "Back"),
+		pretty_stitches(p.bottom_image_stitches, true)
+	)
+end
+
+# ╔═╡ 9c8d2181-b183-40e5-b235-16a59727fda8
+pretty(WOVEN_GRAY_PATTERN)
+
+# ╔═╡ 842b33c6-3ab2-461e-b8ad-f30f224a0d11
+string(pretty_stitches(WOVEN_GRAY_PATTERN.top_image_stitches, false))
+
+# ╔═╡ 89da550c-c4fb-4b31-8f28-1e4bbc707ec2
+string(svg_stitch(5, 10, 1, '/';))
+
 # ╔═╡ abb9e8cd-564e-4fef-afd4-7f05eb76a944
 m("svg", xmlns="http://www.w3.org/2000/svg",
   width="50%",
   viewBox="0 0 100 100",
   m("symbol", id="stitch1",
+    preserveAspectRatio="xMinYMin",
     viewBox="0 0 2 3",
+    refX="0", refY="0",
     svg_stitch(2, 3, 1, '/';)),
   m("symbol", id="stitch2",
+    preserveAspectRatio="xMinYMin",
     viewBox="0 0 2 3",
+    refX="0", refY="0",
     svg_stitch(2, 3, 1, '\\';)),
 
   m("use" , href="#stitch1", x="10mm", y="10mm", width="2mm", height="3mm", style="stroke: none; fill: yellow"),
@@ -1743,9 +1809,13 @@ version = "5.1.1+0"
 # ╠═432d26a6-bac4-48b8-a0ab-1bb1c246d513
 # ╠═8d8e5ec7-3177-4e64-ab6d-791dbf0a06c4
 # ╠═2f1e5906-300d-4c35-84a4-4b1ced9390b7
+# ╠═a38a5557-7a7d-49d3-8041-7a6d655e6a37
+# ╠═89da550c-c4fb-4b31-8f28-1e4bbc707ec2
 # ╠═ad13c3e7-5102-4f7d-99d1-6deea22a2ec5
 # ╠═4d45dbf1-41cf-4568-b099-789630effce3
 # ╠═bec2540b-b3e8-47a7-b968-769b8765d9ef
+# ╠═842b33c6-3ab2-461e-b8ad-f30f224a0d11
+# ╠═9c8d2181-b183-40e5-b235-16a59727fda8
 # ╠═2247a5df-98f8-4d63-8443-2a1cb743aa8b
 # ╠═9cc8f230-1294-420f-a877-726931e7e79f
 # ╠═abb9e8cd-564e-4fef-afd4-7f05eb76a944
