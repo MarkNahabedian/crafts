@@ -1275,7 +1275,7 @@ function pretty_stitches(image_stitches, flip_right_to_left::Bool)
 	          :y => "$(row * stitch_length)mm",
 	          :width => "$(stitch_width)mm",
 	          :height => "$(stitch_length)mm",
-	          :style => "stroke: none; fill: $(color)"))
+	          :style => "stroke: none; fill: $(csscolor(color))"))
     end
     for (rownum, row) in enumerate(image_stitches)
 	for (colnum, stitch) in enumerate(row)
