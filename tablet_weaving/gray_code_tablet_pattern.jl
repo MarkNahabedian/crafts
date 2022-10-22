@@ -9,7 +9,7 @@ begin
 	using Base: @kwdef
 	using Colors
 	using Markdown
-	using Hyperscript
+	using XML
 	using OrderedCollections
 	using LinearAlgebra
 end
@@ -36,6 +36,23 @@ function longer_dimension_counts_weft(image)
 		image
 	end
 end	
+
+# ╔═╡ 0baa4c77-bf7a-4d39-b964-d4636975f8fa
+# XML.jl convenience function for making elements:
+function elt(tag::String, stuff...)
+    attributes = Dict{Symbol, String}()
+    children = []
+    for s in stuff
+        if s isa Pair
+            attributes[s.first] = string(s.second)
+        elseif s isa Number
+            push!(children, string(s))
+        else
+            push!(children, s)
+        end
+    end
+    XML.Node(XML.ELEMENT_NODE, tag, attributes, children)
+end
 
 # ╔═╡ 590963b9-bd0f-4c32-a778-873d22ec9c0f
 md"""
@@ -441,6 +458,18 @@ Return the change in the `Tablet`'s `accumulated_rotation` if the specified
 """
 function rotation(::Tablet, ::RotationDirection) end
 
+# ╔═╡ 50e521b5-c4f7-464d-b6dd-5c7f9d5b4bd0
+"""
+    rotate!(::Tablet, ::RotationDirection)
+
+Rotate the tablet by one position in the specified direction.
+"""
+function rotate!(t::Tablet, d::RotationDirection)
+	new_rotation = rotation(t, d)
+	t.this_shot_rotation += new_rotation
+	return t
+end
+
 # ╔═╡ bb8a5f20-62af-4f28-b0df-85af57beb8f3
 """
 The ABCD rotation causes the A corner of the tablet to move to
@@ -460,6 +489,16 @@ struct DCBA <: RotationDirection end
 
 # ╔═╡ 748199f2-e5d8-4272-9120-f8b50264b5d6
 rotation(t::Tablet, ::DCBA) = -1
+
+# ╔═╡ e31dd514-64af-4491-aac2-b47a85372650
+let
+	bf = Tablet(; a=:A, b=:B, c=:C, d=:D, threading=BackToFront())
+	rotate!(bf, ABCD())
+	@assert bf.this_shot_rotation == 1
+	rotate!(bf, DCBA())
+	@assert bf.this_shot_rotation == 0
+	html"ABCD and DCBA assertions passed."
+end
 
 # ╔═╡ b38913ac-f91f-4e6d-a95a-506b8d3c754c
 """
@@ -496,6 +535,23 @@ function rotation(t::Tablet, ::CounterClockwise)
 	end
 end
 
+# ╔═╡ 71e0104b-beb4-4e3e-8def-218f88fdfbcd
+let
+	bf = Tablet(; a=:A, b=:B, c=:C, d=:D, threading=BackToFront())
+	rotate!(bf, Clockwise())
+	@assert bf.this_shot_rotation == 1
+	rotate!(bf, CounterClockwise())
+	@assert bf.this_shot_rotation == 0
+	
+	fb = Tablet(; a=:A, b=:B, c=:C, d=:D, threading=FrontToBack())
+	rotate!(fb, Clockwise())
+	@assert fb.this_shot_rotation == -1
+	rotate!(fb, CounterClockwise())
+	@assert fb.this_shot_rotation == 0
+
+	html"Clockwise and CounterClockwise rotate! assertions passed."
+end
+
 # ╔═╡ b901fcdd-31dc-4643-9dba-21e70207141b
 """
 The Forward rotation moves the top corner of the tablet closest to the
@@ -526,45 +582,6 @@ function rotation(t::Tablet, ::Backward)
 	else
 		rotation(t, DCBA())
 	end
-end
-
-# ╔═╡ 50e521b5-c4f7-464d-b6dd-5c7f9d5b4bd0
-"""
-    rotate!(::Tablet, ::RotationDirection)
-
-Rotate the tablet by one position in the specified direction.
-"""
-function rotate!(t::Tablet, d::RotationDirection)
-	new_rotation = rotation(t, d)
-	t.this_shot_rotation += new_rotation
-	return t
-end
-
-# ╔═╡ e31dd514-64af-4491-aac2-b47a85372650
-let
-	bf = Tablet(; a=:A, b=:B, c=:C, d=:D, threading=BackToFront())
-	rotate!(bf, ABCD())
-	@assert bf.this_shot_rotation == 1
-	rotate!(bf, DCBA())
-	@assert bf.this_shot_rotation == 0
-	html"ABCD and DCBA assertions passed."
-end
-
-# ╔═╡ 71e0104b-beb4-4e3e-8def-218f88fdfbcd
-let
-	bf = Tablet(; a=:A, b=:B, c=:C, d=:D, threading=BackToFront())
-	rotate!(bf, Clockwise())
-	@assert bf.this_shot_rotation == 1
-	rotate!(bf, CounterClockwise())
-	@assert bf.this_shot_rotation == 0
-	
-	fb = Tablet(; a=:A, b=:B, c=:C, d=:D, threading=FrontToBack())
-	rotate!(fb, Clockwise())
-	@assert fb.this_shot_rotation == -1
-	rotate!(fb, CounterClockwise())
-	@assert fb.this_shot_rotation == 0
-
-	html"Clockwise and CounterClockwise rotate! assertions passed."
 end
 
 # ╔═╡ 1b7b4e33-97c3-4da6-ad86-b9b4646dc619
@@ -727,55 +744,67 @@ end
 
 # ╔═╡ c4804cf2-85ba-4895-8404-47560df04e2f
 function chart_tablet(tablet::Tablet; size=5, x=0)
-	@assert tablet.accumulated_rotation == 0
-	@assert tablet.this_shot_rotation == 0
-	function swatch(i, c)
-		m("rect", width="$(size)mm", height="$(size)mm",
-				  x="$(x)mm", y="$(i * size)mm",
-			      fill="$(csscolor(c))",
-			      stroke="gray")
-	end
-	function threading(th)
-		x1 = x
-		x2 = x1 + size
-		y1 = 4 * size
-		y2 = 5 * size
-		# The direction that the thread passed through the card if the card
-		# is facing to the right (FrontToTheRight stacking)
-		if th isa BackToFront
-			m("line", stroke="gray", strokeWidth="3px",
-				x1="$(x1)mm", y1="$(y1)mm",
-				x2="$(x2)mm", y2="$(y2)mm")
-		else
-			m("line", stroke="gray", fill="gray", strokeWidth="5px",
-				x1="$(x2)mm", y1="$(y1)mm",
-				x2="$(x1)mm", y2="$(y2)mm")
-		end
-	end
-	m("svg", xmlns="http://www.w3.org/2000/svg",
-		m("g",
-			swatch(0, tablet.a), swatch(1, tablet.b),
-			swatch(2, tablet.c), swatch(3, tablet.d),
-			threading(tablet.threading)))
+    @assert tablet.accumulated_rotation == 0
+    @assert tablet.this_shot_rotation == 0
+    function swatch(i, c)
+        elt("rect",
+            :width => "$(size)mm",
+            :height => "$(size)mm",
+            :x => "$(x)mm",
+            :y => "$(i * size)mm",
+            :fill =>"$(csscolor(c))",
+            :stroke => "gray")
+    end
+    function threading(th)
+        x1 = x
+        x2 = x1 + size
+        y1 = 4 * size
+        y2 = 5 * size
+        # The direction that the thread passed through the card if the card
+        # is facing to the right (FrontToTheRight stacking)
+        if th isa BackToFront
+            elt("line",
+                :stroke => "gray",
+                :strokeWidth =>"3px",
+                :x1 => "$(x1)mm",
+                :y1 => "$(y1)mm",
+                :x2 => "$(x2)mm",
+                :y2 => "$(y2)mm")
+        else
+            elt("line",
+                :stroke => "gray",
+                :strokeWidth => "5px",
+                :x1 => "$(x2)mm",
+                :y1 => "$(y1)mm",
+                :x2 => "$(x1)mm",
+                :y2 => "$(y2)mm" )
+        end
+    end
+    elt("svg", :xmlns => "http://www.w3.org/2000/svg",
+        elt("g",
+            swatch(0, tablet.a), swatch(1, tablet.b),
+            swatch(2, tablet.c), swatch(3, tablet.d),
+            threading(tablet.threading)))
 end
 
 # ╔═╡ fd40ecf7-83cb-43b5-b87c-8273f8fd32c4
-(chart_tablet(
+HTML(string((chart_tablet(
     Tablet{Color}(;
                   a=RGB(1, 0, 0),
                   b=RGB(0, 1, 0),
                   c=RGB(0, 0,1),
                   d=RGB(0.5, 0.5, 0.5));
-    x=10))
+    x=10))))
 
 # ╔═╡ 22c96c85-2344-46bc-a64c-460414575677
 function chart_tablets(tablets::Vector{<:Tablet})
-	size = 5
-	m("svg", xmlns="http://www.w3.org/2000/svg",
-			 width="95%",
-			 # viewBox="0 0 $(length(tablets) * size) $(5 * size)",
-		[chart_tablet(tablet; size=size, x=size*(i-1))
-			for (i, tablet) in enumerate(tablets)]...)
+    size = 5
+    elt("svg",
+	:xmlns => "http://www.w3.org/2000/svg",
+	:width => "95%",
+	# :viewBox => "0 0 $(length(tablets) * size) $(5 * size)",
+	[ chart_tablet(tablet; size=size, x=size*(i-1))
+	  for (i, tablet) in enumerate(tablets) ]...)
 end
 
 # ╔═╡ 418c2904-d16a-4c2d-a02f-c069918dca4c
@@ -893,7 +922,7 @@ end
 make_chevron_tablets()
 
 # ╔═╡ f3d5b031-748c-414b-b8a7-201039aa3ae5
-chart_tablets(make_chevron_tablets())
+HTML(string(chart_tablets(make_chevron_tablets())))
 
 # ╔═╡ 38e5dcdb-e192-4c89-9e49-c8a5ad2fcb3c
 """
@@ -1042,7 +1071,7 @@ end
 length(make_diamond_tablets())
 
 # ╔═╡ fd07c1d6-808e-4573-8ff9-e47b0ee68756
-(chart_tablets(make_diamond_tablets()))
+HTML(string(chart_tablets(make_diamond_tablets())))
 
 # ╔═╡ 93497aa8-ba19-45fe-a596-dd5ef194229f
 let
@@ -1174,7 +1203,7 @@ GRAY_TABLETS = let
 end
 
 # ╔═╡ 2b6d73bc-dd88-4f4a-b739-58d57b189df6
-chart_tablets(GRAY_TABLETS)
+HTML(string(chart_tablets(GRAY_TABLETS)))
 
 # ╔═╡ 02798c2e-3d12-4eff-90f8-e24a631ad8f0
 """
@@ -1230,6 +1259,56 @@ let
 	=#
 end
 
+# ╔═╡ a38a5557-7a7d-49d3-8041-7a6d655e6a37
+function pretty_stitches(image_stitches, flip_right_to_left::Bool)
+    # image_stitches should be the top_image_stitches or bottom_image_stitches
+    # of a TabletWeavingPattern.
+    stitch_width = 5
+    stitch_length = 10
+    stitch_diameter = 1
+    uses = []
+    function use(row, col, color, slant)
+        push!(uses,
+              elt("use",
+	          :href => slant == '/' ? "#stitch1" : "#stitch2",
+	          :x => "$(col * stitch_width)mm",
+	          :y => "$(row * stitch_length)mm",
+	          :width => "$(stitch_width)mm",
+	          :height => "$(stitch_length)mm",
+	          :style => "stroke: none; fill: $(color)"))
+    end
+    for (rownum, row) in enumerate(image_stitches)
+	for (colnum, stitch) in enumerate(row)
+	    (color, slant) = stitch
+	    use(rownum, colnum, color, slant)
+	end
+    end
+    println(length(uses))
+    viewbox_width = stitch_width * length(image_stitches[1])
+    viewbox_height = stitch_length * length(image_stitches)
+    elt("svg", 
+        :viewBox => "0 0 $viewbox_width $viewbox_height",
+        elt("g",
+   	    elt("symbol",
+                :id => "stitch1",
+    	        :preserveAspectRatio => "xMinYMin",
+    	        :viewBox => "0 0 $(stitch_width) $(stitch_length)",
+                :refX => "0",
+                :refY => "0",
+    	        svg_stitch(stitch_width, stitch_length, stitch_diameter, '/';),),
+            elt("symbol",
+                :id => "stitch2",
+    	        :preserveAspectRatio => "xMinYMin",
+    	        :viewBox => "0 0 $(stitch_width) $(stitch_length)",
+    	        :refX => "0",
+                :refY => "0",
+    	        svg_stitch(stitch_width, stitch_length, stitch_diameter, '\\';),),
+            uses...))
+end
+
+# ╔═╡ 89da550c-c4fb-4b31-8f28-1e4bbc707ec2
+svg_stitch(5, 10, 1, '/';)
+
 # ╔═╡ ad13c3e7-5102-4f7d-99d1-6deea22a2ec5
 begin
 	struct TabletWeavingPattern{C} # where C causes "invalid type signature" error
@@ -1274,34 +1353,39 @@ end
 
 # ╔═╡ 2f1e5906-300d-4c35-84a4-4b1ced9390b7
 function pretty_plan(p::TabletWeavingPattern)
-	m("table",
-		[
-		m("tr",
-			m("th", align="right", i),
-			[
-				m("td", align="right",
-					tablet_rotation_char(t[1]),
-					t[2].label)
-				for t in step
-			]...)
-			for (i, step) in enumerate(p.weaving_steps)
-		]...,
-		m("tr",
-			m("th", align="right",  "end"),
-			[ m("td", align="right", t.accumulated_rotation) 
-			  for t in p.end_tablets
-			]...),
-		m("tr",
-			m("th", align="right", "min"),
-			[ m("td", align="right", t.min_rotation)
-			  for t in p.end_tablets
-			]...),
-		m("tr",
-			m("th", align="right", "max"),
-			[ m("td", align="right", t.max_rotation) 
-			  for t in p.end_tablets
-			]...)
-		)
+    summary(heading, reader) =
+        elt("tr",
+            elt("th", :align => "right", heading),
+            map(p.end_tablets) do t
+                elt("td", :align => "right", reader(t))
+            end...)
+    elt("table",
+        # Each row of the plan
+        [ elt("tr",
+              elt("th", :align => "right", i),
+              [ elt("td", :align => "right",
+                    tablet_rotation_char(t[1]),
+                    t[2].label)
+                for t in step
+                    ]...)
+          for (i, step) in enumerate(p.weaving_steps)
+              ]...,
+        # End summary:
+        summary("end", t -> t.accumulated_rotation),
+        summary("min", t -> t.min_rotation),
+        summary("max", t -> t.max_rotation))
+end
+
+# ╔═╡ 8d8e5ec7-3177-4e64-ab6d-791dbf0a06c4
+function pretty(p::TabletWeavingPattern)
+    elt("div",
+	elt("h2", p.title),
+	elt("div", chart_tablets(p.initial_tablets)),
+	elt("div", pretty_plan(p)),
+	elt("h3", "Front"),
+	pretty_stitches(p.top_image_stitches, false),
+	elt("h3", "Back"),
+	pretty_stitches(p.bottom_image_stitches, true))
 end
 
 # ╔═╡ 4d45dbf1-41cf-4568-b099-789630effce3
@@ -1311,7 +1395,14 @@ tablets(p::TabletWeavingPattern) = copy.(p.initial_tablets)
 WOVEN_GRAY_PATTERN = TabletWeavingPattern("Gray Code Pattern", GRAY_WEAVE;
 	threading_function = symetric_threading!)
 
+# ╔═╡ 842b33c6-3ab2-461e-b8ad-f30f224a0d11
+string(pretty_stitches(WOVEN_GRAY_PATTERN.top_image_stitches, false))
+
+# ╔═╡ 9c8d2181-b183-40e5-b235-16a59727fda8
+HTML(string(pretty(WOVEN_GRAY_PATTERN)))
+
 # ╔═╡ 2247a5df-98f8-4d63-8443-2a1cb743aa8b
+HTML(string(
 let
     stitch_width = 5               # x direction
     stitch_length = 5 * sqrt(3)    # y direction
@@ -1353,54 +1444,51 @@ let
         ], "; ")
 
     function line(p1, p2, style)
-        m("line",
-          x1 = p1[1],
-          y1 = p1[2],
-          x2 = p2[1],
-          y2 = p2[2],
-          style = style)
+        elt("line",
+            :x1 => p1[1],
+            :y1 => p1[2],
+            :x2 => p2[1],
+            :y2 => p2[2],
+            :style => style)
     end
 
-    m("svg", xmlns="http://www.w3.org/2000/svg",
-      viewBox="0 0 $(2 * stitch_width) $(2 * stitch_length)",
-      width="50%",
-      # bounding rectangle:
-      m("rect",
-        x = 0,
-        y = 0,
-        width = stitch_width,
-        height = stitch_length,
-        style = guide_style
-        ),
-      # Diagonal:
-      line(circle1_center, circle2_center, guide_style),
-      # Normals:
-      line(circle1_center, circle1_center + trans, guide_style),
-      line(circle2_center, circle2_center + trans, guide_style),
-      # circle1:
-      m("circle",
-        style = stitch_style,
-        r = stitch_radius,
-        cx = circle1_center[1],
-        cy = circle1_center[2]
-        ),
-      # circle2:
-      m("circle",
-        style = stitch_style,
-        r = stitch_radius,
-        cx = circle2_center[1],
-        cy = circle2_center[2]
-        ),
-      # lines:
-      line(circle1_center + trans,
-           circle2_center + trans,
-           stitch_style),
-      line(circle1_center - trans,
-           circle2_center - trans,
-           stitch_style)
-    )
+    elt("svg",
+        :xmlns => "http://www.w3.org/2000/svg",
+        :viewBox =>"0 0 $(2 * stitch_width) $(2 * stitch_length)",
+        :width => "50%",
+        # bounding rectangle:
+        elt("rect",
+            :x => 0,
+            :y => 0,
+            :width => stitch_width,
+            :height => stitch_length,
+            :style => guide_style),
+        # Diagonal:
+        line(circle1_center, circle2_center, guide_style),
+        # Normals:
+        line(circle1_center, circle1_center + trans, guide_style),
+        line(circle2_center, circle2_center + trans, guide_style),
+        # circle1:
+        elt("circle",
+            :style => stitch_style,
+            :r => stitch_radius,
+            :cx => circle1_center[1],
+            :cy => circle1_center[2]),
+        # circle2:
+        elt("circle",
+            :style => stitch_style,
+            :r => stitch_radius,
+            :cx => circle2_center[1],
+            :cy => circle2_center[2]),
+        # lines:
+        line(circle1_center + trans,
+             circle2_center + trans,
+             stitch_style),
+        line(circle1_center - trans,
+             circle2_center - trans,
+             stitch_style))
 end
-
+))
 
 # ╔═╡ 9cc8f230-1294-420f-a877-726931e7e79f
 """
@@ -1457,24 +1545,24 @@ function svg_stitch(stitch_width, stitch_length,
         ], "; ")
 
     function line(p1, p2, style)
-        m("line",
-          x1 = p1[1],
-          y1 = p1[2],
-          x2 = p2[1],
-          y2 = p2[2],
-          style = style)
+        elt("line",
+            :x1 => p1[1],
+            :y1 => p1[2],
+            :x2 => p2[1],
+            :y2 => p2[2],
+            :style => style)
     end
 
     guides = []
     if show_guides
         push!(guides,
               # bounding rectangle:
-              m("rect",
-                x = 0,
-                y = 0,
-                width = stitch_width,
-                height = stitch_length,
-                style = guide_style),
+              elt("rect",
+                  :x => 0,
+                  :y => 0,
+                  :width => stitch_width,
+                  :height => stitch_length,
+                  :style => guide_style),
               # Diagonal:
               line(circle1, circle2, guide_style),
               # Normals:
@@ -1487,135 +1575,119 @@ function svg_stitch(stitch_width, stitch_length,
     p4 = circle1 - trans
     pathpoint(p) = join(string.(p), " ")
 
-    m("g",
-      # viewBox="0 0 $(2 * stitch_width) $(2 * stitch_length)",
-      # width="50%",
-      guides...,
-
-      m("path",
-        style = stitch_style,
-        d = join([
-            "M $(pathpoint(p1))",
-            "L $(pathpoint(p2))",
-            let
-                r = stitch_radius
-                "A $r $r 0 0 0 $(pathpoint(p3))"
-            end,
-            "L $(pathpoint(p4))",
-            let
-                r = stitch_radius
-                "A $r $r 0 0 0 $(pathpoint(p1))"
-            end,
-        ], " "))
-    )
+    elt("g",
+        # viewBox="0 0 $(2 * stitch_width) $(2 * stitch_length)",
+        # width="50%",
+        guides...,
+        elt("path",
+            :style => stitch_style,
+            :d => join([
+                "M $(pathpoint(p1))",
+                "L $(pathpoint(p2))",
+                let
+                    r = stitch_radius
+                    "A $r $r 0 0 0 $(pathpoint(p3))"
+                end,
+                "L $(pathpoint(p4))",
+                let
+                    r = stitch_radius
+                    "A $r $r 0 0 0 $(pathpoint(p1))"
+                end,
+            ], " ")))
 end
 
-
-# ╔═╡ a38a5557-7a7d-49d3-8041-7a6d655e6a37
-function pretty_stitches(image_stitches, flip_right_to_left::Bool)
-    # image_stitches should be the top_image_stitches or bottom_image_stitches
-    # of a TabletWeavingPattern.
-    stitch_width = 5
-    stitch_length = 10
-    stitch_diameter = 1
-    uses = []
-    function use(row, col, color, slant)
-	push!(uses,
-	      m("use",
-		href = slant == '/' ? "#stitch1" : "#stitch2",
-		x="$(col * stitch_width)mm",
-		y="$(row * stitch_length)mm",
-		width="$(stitch_width)mm",
-		height="$(stitch_length)mm",
-		style="stroke: none; fill: $(color)"))
-    end
-    for (rownum, row) in enumerate(image_stitches)
-	for (colnum, stitch) in enumerate(row)
-	    (color, slant) = stitch
-	    use(rownum, colnum, color, slant)
-	end
-    end
-    println(length(uses))
-    m("svg", 
-      viewBox="0 0 $(stitch_width * length(image_stitches[1])) $(stitch_length * length(image_stitches))",
-		m("g",
-      m("symbol", id="stitch1",
-    	preserveAspectRatio="xMinYMin",
-    	viewBox="0 0 $(stitch_width) $(stitch_length)",
-    	refX="0", refY="0",
-    	svg_stitch(stitch_width, stitch_length, stitch_diameter, '/';)),
-      m("symbol", id="stitch2",
-    	preserveAspectRatio="xMinYMin",
-    	viewBox="0 0 $(stitch_width) $(stitch_length)",
-    	refX="0", refY="0",
-    	svg_stitch(stitch_width, stitch_length, stitch_diameter, '\\';)),
-      uses...)
-      )
-end
-
-
-# ╔═╡ 8d8e5ec7-3177-4e64-ab6d-791dbf0a06c4
-function pretty(p::TabletWeavingPattern)
-	m("div",
-		m("h2", p.title),
-		m("div", chart_tablets(p.initial_tablets)),
-		m("div", pretty_plan(p)),
-		m("h3", "Front"),
-		pretty_stitches(p.top_image_stitches, false),
-		m("h3", "Back"),
-		pretty_stitches(p.bottom_image_stitches, true)
-	)
-end
-
-# ╔═╡ 9c8d2181-b183-40e5-b235-16a59727fda8
-pretty(WOVEN_GRAY_PATTERN)
-
-# ╔═╡ 842b33c6-3ab2-461e-b8ad-f30f224a0d11
-string(pretty_stitches(WOVEN_GRAY_PATTERN.top_image_stitches, false))
-
-# ╔═╡ 89da550c-c4fb-4b31-8f28-1e4bbc707ec2
-string(svg_stitch(5, 10, 1, '/';))
 
 # ╔═╡ abb9e8cd-564e-4fef-afd4-7f05eb76a944
-m("svg", xmlns="http://www.w3.org/2000/svg",
-  width="50%",
-  viewBox="0 0 100 100",
-  m("symbol", id="stitch1",
-    preserveAspectRatio="xMinYMin",
-    viewBox="0 0 2 3",
-    refX="0", refY="0",
-    svg_stitch(2, 3, 1, '/';)),
-  m("symbol", id="stitch2",
-    preserveAspectRatio="xMinYMin",
-    viewBox="0 0 2 3",
-    refX="0", refY="0",
-    svg_stitch(2, 3, 1, '\\';)),
-
-  m("use" , href="#stitch1", x="10mm", y="10mm", width="2mm", height="3mm", style="stroke: none; fill: yellow"),
-  m("use" , href="#stitch1", x="12mm", y="10mm", width="2mm", height="3mm", style="stroke: none; fill: blue"),
-  m("use" , href="#stitch2", x="14mm", y="10mm", width="2mm", height="3mm", style="stroke: none; fill: yellow"),
-  m("use" , href="#stitch2", x="16mm", y="10mm", width="2mm", height="3mm", style="stroke: none; fill: blue"),
-
-  m("use" , href="#stitch1", x="10mm", y="13mm", width="2mm", height="3mm", style="stroke: none; fill: yellow"),
-  m("use" , href="#stitch1", x="12mm", y="13mm", width="2mm", height="3mm", style="stroke: none; fill: blue"),
-  m("use" , href="#stitch2", x="14mm", y="13mm", width="2mm", height="3mm", style="stroke: none; fill: yellow"),
-  m("use" , href="#stitch2", x="16mm", y="13mm", width="2mm", height="3mm", style="stroke: none; fill: blue")
-  )
-
+HTML(string(
+    elt("svg",
+        :xmlns => "http://www.w3.org/2000/svg",
+        :width => "50%",
+        :viewBox => "0 0 100 100",
+        elt("symbol",
+            :id => "stitch1",
+            :preserveAspectRatio => "xMinYMin",
+            :viewBox => "0 0 2 3",
+            :refX => "0",
+            :refY =>" 0",
+            svg_stitch(2, 3, 1, '/';)),
+        elt("symbol",
+            :id => "stitch2",
+            :preserveAspectRatio => "xMinYMin",
+            :viewBox => "0 0 2 3",
+            :refX => "0",
+            :refY =>"0",
+            svg_stitch(2, 3, 1, '\\';)),
+        elt("use",
+            :href => "#stitch1",
+            :x => "10mm",
+            :y => "10mm",
+            :width => "2mm",
+            :height => "3mm",
+            :style => "stroke: none; fill: yellow"),
+        elt("use",
+            :href => "#stitch1",
+            :x => "12mm",
+            :y => "10mm",
+            :width => "2mm",
+            :height => "3mm",
+            :style => "stroke: none; fill: blue"),
+        elt("use",
+            :href => "#stitch2",
+            :x => "14mm",
+            :y => "10mm",
+            :width => "2mm",
+            :height => "3mm",
+            :style => "stroke: none; fill: yellow"),
+        elt("use",
+            :href => "#stitch2",
+            :x => "16mm",
+            :y => "10mm",
+            :width => "2mm",
+            :height => "3mm",
+            :style => "stroke: none; fill: blue"),
+        elt("use",
+            :href => "#stitch1",
+            :x => "10mm",
+            :y => "13mm",
+            :width => "2mm",
+            :height => "3mm",
+            :style => "stroke: none; fill: yellow"),
+        elt("use",
+            :href => "#stitch1",
+            :x => "12mm",
+            :y => "13mm",
+            :width => "2mm",
+            :height => "3mm",
+            :style => "stroke: none; fill: blue"),
+        elt("use",
+            :href => "#stitch2",
+            :x => "14mm",
+            :y => "13mm",
+            :width => "2mm",
+            :height => "3mm",
+            :style => "stroke: none; fill: yellow"),
+        elt("use",
+            :href => "#stitch2",
+            :x =>"16mm",
+            :y => "13mm",
+            :width =>"2mm",
+            :height =>"3mm",
+            :style =>"stroke: none; fill: blue"))
+))
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
 [deps]
 Colors = "5ae59095-9a9b-59fe-a467-6f913c188581"
-Hyperscript = "47d2ed2b-36de-50cf-bf87-49c2cf4b8b91"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 Markdown = "d6f4376e-aef5-505a-96c1-9c027394607a"
 OrderedCollections = "bac558e1-5e72-5ebc-8fee-abe8a469f55d"
+XML = "72c71f33-b9b6-44de-8c94-c961784809e2"
 
 [compat]
 Colors = "~0.12.8"
-Hyperscript = "~0.0.4"
 OrderedCollections = "~1.4.1"
+XML = "~0.1.3"
 """
 
 # ╔═╡ 00000000-0000-0000-0000-000000000002
@@ -1624,7 +1696,16 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.8.0"
 manifest_format = "2.0"
-project_hash = "75259bf92e773de940b4bad4bda1529b290ec6f6"
+project_hash = "ea994ea33892a9b1d757ee053089ed1fdb81e7cc"
+
+[[deps.AbstractTrees]]
+git-tree-sha1 = "5c0b629df8a5566a06f5fef5100b53ea56e465a0"
+uuid = "1520ce14-60c1-5f80-bbc7-55ef81b5835c"
+version = "0.4.2"
+
+[[deps.ArgTools]]
+uuid = "0dad84c5-d112-42e6-8d28-ef12dabb789f"
+version = "1.1.1"
 
 [[deps.Artifacts]]
 uuid = "56f22d72-fd6d-98f1-02f0-08ddc0907c33"
@@ -1649,21 +1730,38 @@ deps = ["Artifacts", "Libdl"]
 uuid = "e66e0078-7015-5450-92f7-15fbd957f2ae"
 version = "0.5.2+0"
 
+[[deps.Dates]]
+deps = ["Printf"]
+uuid = "ade2ca70-3891-5945-98fb-dc099432e06a"
+
+[[deps.Downloads]]
+deps = ["ArgTools", "FileWatching", "LibCURL", "NetworkOptions"]
+uuid = "f43a241f-c20a-4ad4-852c-f6b1247861c6"
+version = "1.6.0"
+
+[[deps.FileWatching]]
+uuid = "7b1f6079-737a-58dc-b8bc-7a2ca5c1b5ee"
+
 [[deps.FixedPointNumbers]]
 deps = ["Statistics"]
 git-tree-sha1 = "335bfdceacc84c5cdf16aadc768aa5ddfc5383cc"
 uuid = "53c48c17-4a7d-5ca2-90c5-79b7896eea93"
 version = "0.8.4"
 
-[[deps.Hyperscript]]
-deps = ["Test"]
-git-tree-sha1 = "8d511d5b81240fc8e6802386302675bdf47737b9"
-uuid = "47d2ed2b-36de-50cf-bf87-49c2cf4b8b91"
-version = "0.0.4"
+[[deps.LibCURL]]
+deps = ["LibCURL_jll", "MozillaCACerts_jll"]
+uuid = "b27032c2-a3e7-50c8-80cd-2d36dbcbfd21"
+version = "0.6.3"
 
-[[deps.InteractiveUtils]]
-deps = ["Markdown"]
-uuid = "b77e0a4c-d291-57a0-90e8-8db25a27a240"
+[[deps.LibCURL_jll]]
+deps = ["Artifacts", "LibSSH2_jll", "Libdl", "MbedTLS_jll", "Zlib_jll", "nghttp2_jll"]
+uuid = "deac9b47-8bc7-5906-a0fe-35ac56dc84c0"
+version = "7.84.0+0"
+
+[[deps.LibSSH2_jll]]
+deps = ["Artifacts", "Libdl", "MbedTLS_jll"]
+uuid = "29816b5a-b9ab-546f-933c-edad1886dfa8"
+version = "1.10.2+0"
 
 [[deps.Libdl]]
 uuid = "8f399da3-3557-5675-b5ff-fb832c97cbdb"
@@ -1672,12 +1770,22 @@ uuid = "8f399da3-3557-5675-b5ff-fb832c97cbdb"
 deps = ["Libdl", "libblastrampoline_jll"]
 uuid = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 
-[[deps.Logging]]
-uuid = "56ddb016-857b-54e1-b83d-db4d58db5568"
-
 [[deps.Markdown]]
 deps = ["Base64"]
 uuid = "d6f4376e-aef5-505a-96c1-9c027394607a"
+
+[[deps.MbedTLS_jll]]
+deps = ["Artifacts", "Libdl"]
+uuid = "c8ffd9c3-330d-5841-b78e-0817d7145fa1"
+version = "2.28.0+0"
+
+[[deps.MozillaCACerts_jll]]
+uuid = "14a3606d-f60d-562e-9121-12d972cd8159"
+version = "2022.2.1"
+
+[[deps.NetworkOptions]]
+uuid = "ca575930-c2e3-43a9-ace4-1e988b2c1908"
+version = "1.2.0"
 
 [[deps.OpenBLAS_jll]]
 deps = ["Artifacts", "CompilerSupportLibraries_jll", "Libdl"]
@@ -1688,6 +1796,10 @@ version = "0.3.20+0"
 git-tree-sha1 = "85f8e6578bf1f9ee0d11e7bb1b1456435479d47c"
 uuid = "bac558e1-5e72-5ebc-8fee-abe8a469f55d"
 version = "1.4.1"
+
+[[deps.Printf]]
+deps = ["Unicode"]
+uuid = "de0858da-6303-5e67-8744-51eddeeeb8d7"
 
 [[deps.Random]]
 deps = ["SHA", "Serialization"]
@@ -1713,20 +1825,36 @@ uuid = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
 deps = ["LinearAlgebra", "SparseArrays"]
 uuid = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
 
-[[deps.Test]]
-deps = ["InteractiveUtils", "Logging", "Random", "Serialization"]
-uuid = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+[[deps.Unicode]]
+uuid = "4ec0a83e-493e-50e2-b9ac-8f72acf5a8f5"
+
+[[deps.XML]]
+deps = ["AbstractTrees", "Dates", "Downloads", "OrderedCollections"]
+git-tree-sha1 = "8ec5c77816d33e98c59019ed14f92211b3ab786f"
+uuid = "72c71f33-b9b6-44de-8c94-c961784809e2"
+version = "0.1.3"
+
+[[deps.Zlib_jll]]
+deps = ["Libdl"]
+uuid = "83775a58-1f1d-513f-b197-d71354ab007a"
+version = "1.2.12+3"
 
 [[deps.libblastrampoline_jll]]
 deps = ["Artifacts", "Libdl", "OpenBLAS_jll"]
 uuid = "8e850b90-86db-534c-a0d3-1478176c7d93"
 version = "5.1.1+0"
+
+[[deps.nghttp2_jll]]
+deps = ["Artifacts", "Libdl"]
+uuid = "8e850ede-7688-5339-a07c-302acd2aaf8d"
+version = "1.48.0+0"
 """
 
 # ╔═╡ Cell order:
 # ╟─89e97690-18a6-11ed-15e4-4bb0cd5b7c50
 # ╠═9c0b434e-571c-4181-9350-848d50ba42e9
 # ╠═581fda2d-0771-4283-8ca1-4b88cbeffecf
+# ╠═0baa4c77-bf7a-4d39-b964-d4636975f8fa
 # ╟─590963b9-bd0f-4c32-a778-873d22ec9c0f
 # ╠═a3b3c00d-425d-4437-b964-50946b7e75b3
 # ╠═e147b976-9227-4d54-8b14-f05d8eb0d42e
