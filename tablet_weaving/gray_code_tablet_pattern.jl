@@ -1599,81 +1599,54 @@ end
 
 # ╔═╡ abb9e8cd-564e-4fef-afd4-7f05eb76a944
 HTML(string(
-    elt("svg",
-        :xmlns => "http://www.w3.org/2000/svg",
-        :width => "50%",
-        :viewBox => "0 0 100 100",
-        elt("symbol",
-            :id => "stitch1",
-            :preserveAspectRatio => "xMinYMin",
-            :viewBox => "0 0 2 3",
-            :refX => "0",
-            :refY =>" 0",
-            svg_stitch(2, 3, 1, '/';)),
-        elt("symbol",
-            :id => "stitch2",
-            :preserveAspectRatio => "xMinYMin",
-            :viewBox => "0 0 2 3",
-            :refX => "0",
-            :refY =>"0",
-            svg_stitch(2, 3, 1, '\\';)),
-        elt("use",
-            :href => "#stitch1",
-            :x => "10mm",
-            :y => "10mm",
-            :width => "2mm",
-            :height => "3mm",
-            :style => "stroke: none; fill: yellow"),
-        elt("use",
-            :href => "#stitch1",
-            :x => "12mm",
-            :y => "10mm",
-            :width => "2mm",
-            :height => "3mm",
-            :style => "stroke: none; fill: blue"),
-        elt("use",
-            :href => "#stitch2",
-            :x => "14mm",
-            :y => "10mm",
-            :width => "2mm",
-            :height => "3mm",
-            :style => "stroke: none; fill: yellow"),
-        elt("use",
-            :href => "#stitch2",
-            :x => "16mm",
-            :y => "10mm",
-            :width => "2mm",
-            :height => "3mm",
-            :style => "stroke: none; fill: blue"),
-        elt("use",
-            :href => "#stitch1",
-            :x => "10mm",
-            :y => "13mm",
-            :width => "2mm",
-            :height => "3mm",
-            :style => "stroke: none; fill: yellow"),
-        elt("use",
-            :href => "#stitch1",
-            :x => "12mm",
-            :y => "13mm",
-            :width => "2mm",
-            :height => "3mm",
-            :style => "stroke: none; fill: blue"),
-        elt("use",
-            :href => "#stitch2",
-            :x => "14mm",
-            :y => "13mm",
-            :width => "2mm",
-            :height => "3mm",
-            :style => "stroke: none; fill: yellow"),
-        elt("use",
-            :href => "#stitch2",
-            :x =>"16mm",
-            :y => "13mm",
-            :width =>"2mm",
-            :height =>"3mm",
-            :style =>"stroke: none; fill: blue"))
+    let
+        stitch_width = 2
+        stitch_height = 3
+
+        use(id, color, x, y) =
+            elt("use",
+                :href => "#$id",
+                :x => "$(x * stitch_width)mm",
+                :y => "$(y * stitch_height)mm",
+                :width => "$(stitch_width)mm",
+                :height => "$(stitch_height)mm",
+                :style => "stroke: none; fill: $color")
+
+        elt("svg",
+            :xmlns => "http://www.w3.org/2000/svg",
+            :width => "50%",
+            :viewBox => "0 0 100 100",
+
+            elt("symbol",
+                :id => "stitch1",
+                :preserveAspectRatio => "xMinYMin",
+                :viewBox => "0 0 $stitch_width $stitch_height",
+                :refX => "0",
+                :refY =>" 0",
+                svg_stitch(stitch_width, stitch_height, 1, '/';)),
+            elt("symbol",
+                :id => "stitch2",
+                :preserveAspectRatio => "xMinYMin",
+                :viewBox => "0 0 $stitch_width $stitch_height",
+                :refX => "0",
+                :refY =>"0",
+                svg_stitch(stitch_width, stitch_height, 1, '\\';)),
+
+            use("stitch1", "yellow", 0, 0),
+            use("stitch1", "blue",   1, 0),
+            use("stitch2", "yellow", 2, 0),
+            use("stitch2", "blue",   3, 0),
+            use("stitch1", "blue",   0, 1),
+            use("stitch1", "yellow", 1, 1),
+            use("stitch2", "blue",   2, 1),
+            use("stitch2", "yellow", 3, 1)
+            )
+    end
 ))
+
+
+# ╔═╡ 52c22def-b6e6-4fc4-a10a-ac41f6400beb
+subtypes(Unsigned)
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -1947,5 +1920,6 @@ version = "1.48.0+0"
 # ╠═2247a5df-98f8-4d63-8443-2a1cb743aa8b
 # ╠═9cc8f230-1294-420f-a877-726931e7e79f
 # ╠═abb9e8cd-564e-4fef-afd4-7f05eb76a944
+# ╠═52c22def-b6e6-4fc4-a10a-ac41f6400beb
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
