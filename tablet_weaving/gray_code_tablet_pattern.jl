@@ -1263,19 +1263,19 @@ end
 function pretty_stitches(image_stitches, flip_right_to_left::Bool)
     # image_stitches should be the top_image_stitches or bottom_image_stitches
     # of a TabletWeavingPattern.
-    stitch_width = 5
-    stitch_length = 10
+    stitch_width = 2
+    stitch_length = 3
     stitch_diameter = 1
     uses = []
     function use(row, col, color, slant)
         push!(uses,
               elt("use",
 	          :href => slant == '/' ? "#stitch1" : "#stitch2",
-	          :x => "$(col * stitch_width)mm",
-	          :y => "$(row * stitch_length)mm",
-	          :width => "$(stitch_width)mm",
-	          :height => "$(stitch_length)mm",
-	          :style => "stroke: none; fill: $(csscolor(color))"))
+	          :x => "$(col * stitch_width)",
+	          :y => "$(row * stitch_length)",
+	          :width => "$(stitch_width)",
+	          :height => "$(stitch_length)",
+	          :style => "stroke: none; fill: $(csscolor(color)); vector-effect: non-scaling-stroke"))
     end
     for (rownum, row) in enumerate(image_stitches)
 	for (colnum, stitch) in enumerate(row)
@@ -1600,8 +1600,8 @@ end
 # ╔═╡ abb9e8cd-564e-4fef-afd4-7f05eb76a944
 HTML(string(
     let
-        stitch_width = 2
-        stitch_height = 3
+        stitch_width = 1
+        stitch_height = 1
 
         use(id, color, x, y) =
             elt("use",
@@ -1610,7 +1610,7 @@ HTML(string(
                 :y => "$(y * stitch_height)mm",
                 :width => "$(stitch_width)mm",
                 :height => "$(stitch_height)mm",
-                :style => "stroke: none; fill: $color")
+                :style => "stroke: none; fill: $color; vector-effect: non-scaling-stroke")
 
         elt("svg",
             :xmlns => "http://www.w3.org/2000/svg",
@@ -1644,9 +1644,6 @@ HTML(string(
     end
 ))
 
-
-# ╔═╡ 52c22def-b6e6-4fc4-a10a-ac41f6400beb
-subtypes(Unsigned)
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -1920,6 +1917,5 @@ version = "1.48.0+0"
 # ╠═2247a5df-98f8-4d63-8443-2a1cb743aa8b
 # ╠═9cc8f230-1294-420f-a877-726931e7e79f
 # ╠═abb9e8cd-564e-4fef-afd4-7f05eb76a944
-# ╠═52c22def-b6e6-4fc4-a10a-ac41f6400beb
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
