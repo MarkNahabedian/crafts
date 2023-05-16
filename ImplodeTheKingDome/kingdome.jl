@@ -104,10 +104,17 @@ Kingdom = [
     Measure(17, 1),
     Measure(18, 1),
     Measure(19, 1),
+    Measure(20, 1),
+    Measure(21, 1),
+    # Measures from here on have funny lengths
+    Measure(22, ("F5", 3//8), ("F5", 1//8), "F5", 1//4),
+    Measure(23, ("F5", 1)),
+    Measure(24, ("F5", 1)),
+    Measure(25, ("F5", 1)),
 ]
 
 # musescore("kingdom_score.png", Notes(collect(flatten(Kingdom))))
 
-save("foo.mid", Notes(collect(flatten(Kingdom))))
+save("kingdom.mid", Notes(collect(flatten(Kingdom))))
 
-# mplay("foo.mid")
+# mplay("kingdom.mid")
