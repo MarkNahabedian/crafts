@@ -62,9 +62,7 @@ add_words_and_beats(node::Node,
 
 add_words_and_beats(node::Node,
                     nodetype::Val{XML.Element}) =
-    add_words_and_beats(node::Node,
-                        nodetype::Val{XML.Element},
-                        Val(Symbol(tag(node))))
+    add_words_and_beats(node, nodetype, Val(Symbol(tag(node))))
 
 add_words_and_beats(node::Node,
                     nodetype::Val{XML.Element},
@@ -81,21 +79,23 @@ function add_words_and_beats(node::Node,
                              tag::Val{Symbol("line")})
     # Get the text content and split into words (by whitespace) and
     # beats (by BEAT_SEPARATOR):
-    map(children(node)) do child
-        @assert child isa Node
-        println(child)
-        println(XML.Text)
-        println(typeof(XML.Text))
-        println(value(child))
-        println(nodetype(child))
-        if nodetype(child) == XML.Text
-            text_to_words_and_beats(value(child))
-        elseif nodetype(child) in (XML.Comment, XML.CData)
-            child
-        else
-            prinln("unsuppoted node in <line> context: $child")
-        end
-    end
+    Element(tag,
+            map(children(node)) do child
+                @assert child isa Node
+                println(child)
+                println(XML.Text)
+                println(typeof(XML.Text))
+                println(value(child))
+                println(nodetype(child))
+                if nodetype(child) == XML.Text
+                    text_to_words_and_beats(value(child))
+                elseif nodetype(child) in (XML.Comment, XML.CData)
+                    child
+                else
+                    prinln("unsuppoted node in <line> context: $child")
+                end
+            end... ;
+            attributes(node)...)
 end
 
 function text_to_words_and_beats(text::AbstractString)
