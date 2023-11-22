@@ -14,12 +14,18 @@ Returns the child of node specified by the index.
 if more than one index is specified then `childn`
 recurses on the result and the remaining indices.
 """
-function childn(node::Node, indices...)::Node
+function childn(node::Node, indices::Int...)::Node
     if isempty(indices)
         node
     else
-        childn(children(node)[indices[1]],
-               indices[2:end]...)
+        i = indices[1]
+        l = length(children(node))
+        if i <= l
+            childn(children(node)[i],
+                   indices[2:end]...)
+        else
+            error("index $i out of range for $node, which has only $l children.")
+        end
     end
 end
 
@@ -61,47 +67,45 @@ function add_words_and_beats(filename::AbstractString)
     basename, ext = splitext(filename)
     @assert ext == ".xml"
     input_doc = read(filename, Node)
-    @assert input_doc isa Node
-    @assert nodetype(input_doc) == XML.Document
     new_doc = add_words_and_beats(input_doc)
     output_name = "$basename$WORDS_AND_BEATS_SUFFIX$ext"
     @assert new_doc isa Node
     @assert nodetype(new_doc) == XML.Document
-    XML.write(output_name, new_doc)
-    println("Wrote $output_name.")
+    XML.write(output_name, new_doc; indentsize=2)
+    println("Wrote $output_name")
 end
 
-add_words_and_beats(node::Node) = 
-    add_words_and_beats(node, Val(nodetype(node)))
+add_words_and_beats(node::Node) =
+    add_words_and_beats1(node, Val(nodetype(node)))
 
-add_words_and_beats(node::Node,
-                    ::Val{XML.Document}) =
-                        Document(map(children(node)) do child
-                                     add_words_and_beats(child)
-                                 end)
+add_words_and_beats1(node::Node,
+                     ::Val{XML.Document}) =
+                         Document(map(children(node)) do child
+                                      add_words_and_beats(child)
+                                  end...)
 
-add_words_and_beats(node::Node,
-                    nt::Union{Val{XML.Comment},
-                                    Val{XML.CData},
-                                    Val{XML.Text}}) = node
+add_words_and_beats1(node::Node,
+                     ::Union{Val{XML.Comment},
+                             Val{XML.CData},
+                             Val{XML.Text}}) = node
 
-add_words_and_beats(node::Node,
+add_words_and_beats1(node::Node,
                     nt::Val{XML.Element}) =
-    add_words_and_beats(node, nt, Val(Symbol(tag(node))))
+    add_words_and_beats1(node, nt, Val(Symbol(tag(node))))
 
-add_words_and_beats(node::Node,
-                    ::Val{XML.Element},
-                    tag::Union{Val{Symbol("song")},
-                               Val{Symbol("verse")}}) =
-    Element(tag,
+add_words_and_beats1(node::Node,
+                     ::Val{XML.Element},
+                     ::Union{Val{Symbol("song")},
+                             Val{Symbol("verse")}}) =
+    Element(tag(node),
             map(children(node)) do child
                 add_words_and_beats(child)
             end...;
             safe_attributes(node)...)
 
-function add_words_and_beats(node::Node,
-                             ::Val{XML.Element},
-                             tag::Val{Symbol("line")})
+function add_words_and_beats1(node::Node,
+                              ::Val{XML.Element},
+                              ::Val{Symbol("line")})
     # Get the text content and split into words (by whitespace) and
     # beats (by BEAT_SEPARATOR):
     new_children = []
@@ -116,7 +120,7 @@ function add_words_and_beats(node::Node,
             println("unsuppoted node in <line> context: $child")
         end
     end
-    Element(tag, new_children...;
+    Element(tag(node), new_children...;
             safe_attributes(node)...)
 end
 
@@ -124,8 +128,8 @@ function text_to_words_and_beats(text::AbstractString)
     map(split(text)) do word
         Element("word",
                 map(split(word, BEAT_SEPARATOR)) do beat
-                    Element("beat", beat)
-                end)
+                    Element("beat", XML.Text(beat))
+                end...)
     end
 end
 
