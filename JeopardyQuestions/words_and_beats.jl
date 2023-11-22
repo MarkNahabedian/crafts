@@ -60,8 +60,13 @@ WORDS_AND_BEATS_SUFFIX = "-with-words-and-beats"
 function add_words_and_beats(filename::AbstractString)
     basename, ext = splitext(filename)
     @assert ext == ".xml"
-    new_doc = add_words_and_beats(read(filename, Node))
+    input_doc = read(filename, Node)
+    @assert input_doc isa Node
+    @assert nodetype(input_doc) == XML.Document
+    new_doc = add_words_and_beats(input_doc)
     output_name = "$basename$WORDS_AND_BEATS_SUFFIX$ext"
+    @assert new_doc isa Node
+    @assert nodetype(new_doc) == XML.Document
     XML.write(output_name, new_doc)
     println("Wrote $output_name.")
 end
