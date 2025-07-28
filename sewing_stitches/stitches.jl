@@ -10,6 +10,8 @@ using XML
 Pkg.add("OrderedCollections")
 using OrderedCollections
 
+println()
+
 
 SEWING_STITCHES = Dict()
 
@@ -86,17 +88,36 @@ h1 {
     display: flex;
     flex-direction: row;
     flex-wrap: nowrap;
+    page-break-inside: avoid;
 }
 
 .text {
+    display: inline-block;
+    flex-grow: 1;
+    width: 2in;
 }
 
 .example-stitches {
+    display: inline-block;
+    margin: 0;
 }
 
 punch-hole {
     fill: blue;
     stroke-width: 0;
+}
+
+@page {
+    size: $(svg_inch(SHEET_WIDTH)) $(svg_inch(SHEET_HEIGHT)) portrait;
+    margin-top: 0.5in;
+    margin-bottom: 0.5in;
+    margin-left: 1in;
+    margin-right: 0.25 in;
+}
+
+@media print {
+    .page {
+    }
 }
 
 """
@@ -105,13 +126,14 @@ punch-hole {
 function svg_punch_template(stitch::SewingStitch)
     vpwidth = svgdistance(SVG_TEMPLATE_WIDTH)
     vpheight = svgdistance(SHEET_HEIGHT)
-    punch_count = floor(Int, SHEET_HEIGHT / (stitch.paracord_hole_spacing))
+    punch_count = floor(Int, (SHEET_HEIGHT - 1 * u"inch") / (stitch.paracord_hole_spacing))
     end_margin = (SHEET_HEIGHT - (punch_count - 1) * stitch.paracord_hole_spacing) / 2
     elt("svg",
         :xmlns => "http://www.w3.org/2000/svg",
         :width => svg_inch(SVG_TEMPLATE_WIDTH),
         :height => svg_inch(SHEET_HEIGHT),
         :viewBox => "0 0 $vpwidth $vpheight",
+        :preserveAspectRatio => "xMaxyMid",
         map(0 : (punch_count - 1)) do i
             elt("circle",
                 :r => svg_unitless(PUNCH_RADIUS),
