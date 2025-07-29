@@ -37,6 +37,18 @@ struct SewingStitch
 end
 
 ################################################################################
+# 209, 503, 504
+
+#=  Template:
+SewingStitch(
+    iso_number = 
+    name = 
+    number_of_threads = 
+    confined_to_edge = 
+    description = 
+    paracord_hole_spacing = 
+)
+=#
 
 SewingStitch(
     iso_number = 101,
@@ -64,8 +76,12 @@ SewingStitch(
     pulled into the fabric.""",
     paracord_hole_spacing = 0.75 * u"inch")
 
+SewingStitch(
 
 ################################################################################
+
+# These web pages format properly in Safari, but in Chrome for
+# printing, the punch holes are on a separate page.
 
 SHEET_WIDTH = 8 * u"inch"
 SHEET_HEIGHT = 10 * u"inch"
