@@ -16,10 +16,10 @@ Over the course of this project I've found some valuable web references.
 The Groz-Beckert YouTube channel has slow motion animations for some
 stitches:
 
-- 301 https://www.youtube.com/watch?v=zk9h8ByMcvg
-- 401 https://www.youtube.com/watch?v=jEr_SNFMIqw
-- 504 https://www.youtube.com/watch?v=KMrsT6jPR7s
-- 605 https://www.youtube.com/watch?v=wH4mEIRzwOU
+- [301 lockstitch](https://www.youtube.com/watch?v=zk9h8ByMcvg)
+- [401 one needle, one looper](https://www.youtube.com/watch?v=jEr_SNFMIqw)
+- [504 one needle, two loopers](ttps://www.youtube.com/watch?v=KMrsT6jPR7s)
+- [605 3 needles, 5 threads](https://www.youtube.com/watch?v=wH4mEIRzwOU)
 
 ISO 4915_1991 provides descriptions of these and many other stitches,
 but is unfortunately trapped behind a pay wall.
