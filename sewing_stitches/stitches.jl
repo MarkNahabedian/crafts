@@ -20,6 +20,7 @@ struct SewingStitch
     name::String
     number_of_threads::Int
     confined_to_edge::Bool
+    reidermeister_only::Bool
     description::String
     paracord_hole_spacing
 
@@ -46,7 +47,7 @@ end
 
 
 ################################################################################
-# 503, 504
+# 504
 
 # 301 https://www.youtube.com/watch?v=zk9h8ByMcvg
 # 401 https://www.youtube.com/watch?v=jEr_SNFMIqw
@@ -59,6 +60,7 @@ SewingStitch(
     name = 
     number_of_threads = 
     confined_to_edge = 
+    reidermeister_only =
     description = 
     paracord_hole_spacing = 
 )
@@ -69,11 +71,15 @@ SewingStitch(
     name = "Single Thread Chain Stitch",
     number_of_threads = 1,
     confined_to_edge = false,
+    reidermeister_only = true,
     description = """
 
-        The single threaded needle passes into the fabric to form a
-        loop un the underside.  A hook catches that loop and pulls it
-        through the loop from the previous stitch.
+        A hook on the under side of the fabric is holding the loop
+        from the previous stitch.  The threaded needle passes into the
+        fabric and through that loop and forms a new loop on the
+        underside. The hook drops the previous loop and catches the
+        new one.  The needle is retracted and the fabric advanced,
+        pulling the stitch tight.
 
     """,
     paracord_hole_spacing = 0.5 * u"inch")
@@ -83,6 +89,7 @@ SewingStitch(
     name = "Straight or Running Stitch",
     number_of_threads = 1,
     confined_to_edge = false,
+    reidermeister_only = false,
     description = """
 
         This is a common stitch used in hand sewing.  Start with a
@@ -99,6 +106,7 @@ SewingStitch(
     name = "Lockstitch",
     number_of_threads = 2,
     confined_to_edge = false,
+    reidermeister_only = false,
     description = """
 
     This is the fundamental stitch of machine sewing.  The top thread
@@ -119,14 +127,19 @@ SewingStitch(
     name = "Two Thread OverEdge (Serging)",
     number_of_threads = 2,
     confined_to_edge = true,
+    reidermeister_only = true,
     description = """
 
     The top thread is threaded through a needle.  The edge thread is
     threaded through a looper.  The looper can move the edge thread
     around the edge to either surface of the fabric.  With the looper
     holding a loop of the bottom thread on the upper surface of the
-    fabric, the needed passes the top thread through that loop and
-    through the fabric.
+    fabric, the needle passes the top thread through that loop and
+    through the fabric.  The looper moves to the underside of the
+    fabrid and catches the loop of the needle thread as the needle
+    retracts, passing a new loop of the looper thread through the loop
+    in the needle thread before the looper returns to the top surface
+    of the fabric for the next stitch.
 
     """,
     paracord_hole_spacing = 0.75 * u"inch")
