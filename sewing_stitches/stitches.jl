@@ -145,8 +145,13 @@ PUNCH_RADIUS = 0.125 * u"inch" / 2
 include("elt.jl")
 
 STYLESHEET = """
-h1 {
+body {
+    font-family: sans-serif;
+}
+
+.title {
     font-size: 0.25in;
+    text-align: center;
 }
 
 .thread-count {
@@ -221,7 +226,8 @@ function format_stitch_page(stitch::SewingStitch)
             elt("body",
                 elt("div", "class" => "page",
                     elt("div", "class" => "text",
-                        elt("h1", "$(stitch.iso_number) - $(stitch.name)"),
+                        elt("div", :class => "title",
+                            "$(stitch.iso_number) - $(stitch.name)"),
                         elt("div", "class" => "thread-count",
                             "$(stitch.number_of_threads) threads"),
                         elt("p", stitch.description)),
