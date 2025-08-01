@@ -25,10 +25,11 @@ struct SewingStitch
     paracord_hole_spacing
 
     SewingStitch(; iso_number, name, number_of_threads,
-                 confined_to_edge, description, paracord_hole_spacing) =
+                 confined_to_edge, reidermeister_only,
+                 description, paracord_hole_spacing) =
                      SewingStitch(iso_number, name, number_of_threads, 
-                                  confined_to_edge, description,
-                                  paracord_hole_spacing)
+                                  confined_to_edge, reidermeister_only,
+                                  description, paracord_hole_spacing)
 
     function SewingStitch(args...)
         s = new(args...)
