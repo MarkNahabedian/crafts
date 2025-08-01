@@ -1,12 +1,12 @@
 # Examples of Sewing Stitches
 
 I'm hoping to produce a "book" that illustrates how common sewing
-stitche, particularly machine stitches, are formed.
+stitches, particularly machine stitches, are formed.
 
 There will be one leaf for each stitch.  Each leaf will be made of
 fabric and have descriptive text printed on it.  The leaf will have a
 row of holes punched about a half inch from the edge.  Paracord will
-pass through these holes to illustrate the stitch.
+pass through these holes to illustrate each stitch.
 
 
 ## Links and references
