@@ -1,5 +1,7 @@
 using Pkg
 using Printf
+import Markdown
+using Markdown: @md_str
 Pkg.activate(; temp=true)
 Pkg.add("Unitful")
 using Unitful
@@ -21,7 +23,7 @@ struct SewingStitch
     number_of_threads::Int
     confined_to_edge::Bool
     reidermeister_only::Bool
-    description::String
+    description
     paracord_hole_spacing
 
     SewingStitch(; iso_number, name, number_of_threads,
@@ -46,6 +48,16 @@ function html_file_name(stitch::SewingStitch)
     "$(stitch.iso_number)-$name.html"
 end
 
+function description_html(stitch::SewingStitch)
+    if stitch.description isa Markdown.MD
+        parse(join(["<div>",
+                    Markdown.html(stitch.description),
+                    "</div>"]),
+              XML.Node)
+    else
+        elt("div", stitch.description)
+    end
+end
 
 ################################################################################
 # 504
@@ -151,27 +163,27 @@ SewingStitch(
     number_of_threads = 3,
     confined_to_edge = true,
     reidermeister_only = true,
-    description = """
+    description = md"""
 
     This stitch uses one top needle and two loopers.  We start with
     the needle in its topmost position, the upper looper holding a
     loop of its thread across the top surface of the fabric under the
     needle, and the lower looper retracted at its poinit of motion
-    that is furthest from the edge.
+    that is furthest from the edge of the fabric.
 
-    1) With the upper the needle passes a loop of the needle thread
-    through that loop and the fabric.
+    - The upper needle passes a loop of the needle thread through that
+      loop and the fabric.
 
-    2) The lower loopper moves towards the edge while passing a loop
-    of its thread through the needle thread loop under the fabric,
-    while the upper looper moves to the edge of the fabric.
+    - The lower loopper moves towards the edge while passing a loop
+      of its thread through the needle thread loop under the fabric.
+      Meanwhile, the upper looper moves to the edge of the fabric.
 
-    3) Next the lower looper pulls a loop of its thread to the edge of
-    the fabric.
+    - Next the lower looper pulls a loop of its thread to the edge of
+      the fabric.
 
-    4) Finally, the upper looper passes a loop of its thread through
-    that loop of the lower looper's thread and returns to its starting
-    position.
+    - Finally, the upper looper passes a loop of its thread through
+      that loop of the lower looper's thread and returns to its starting
+      position.
 
     """,
     paracord_hole_spacing = 1 * u"inch"
@@ -276,7 +288,7 @@ function format_stitch_page(stitch::SewingStitch)
                             "$(stitch.iso_number) - $(stitch.name)"),
                         elt("div", "class" => "thread-count",
                             "$(stitch.number_of_threads) threads"),
-                        elt("p", stitch.description)),
+                        elt("p", description_html(stitch))),
                     elt("div", "class" => "example-stitches",
                         # We want to run an SVG line of dots to serve as the hole
                         # punch template along the right edge.  Should we do that
