@@ -143,7 +143,39 @@ SewingStitch(
     of the fabric for the next stitch.
 
     """,
-    paracord_hole_spacing = 0.75 * u"inch")
+    paracord_hole_spacing = 1 * u"inch")
+
+SewingStitch(
+    iso_number = 504,
+    name = "Three Thread OverEdge (Serging)",
+    number_of_threads = 3,
+    confined_to_edge = true,
+    reidermeister_only = true,
+    description = """
+
+    This stitch uses one top needle and two loopers.  We start with
+    the needle in its topmost position, the upper looper holding a
+    loop of its thread across the top surface of the fabric under the
+    needle, and the lower looper retracted at its poinit of motion
+    that is furthest from the edge.
+
+    1) With the upper the needle passes a loop of the needle thread
+    through that loop and the fabric.
+
+    2) The lower loopper moves towards the edge while passing a loop
+    of its thread through the needle thread loop under the fabric,
+    while the upper looper moves to the edge of the fabric.
+
+    3) Next the lower looper pulls a loop of its thread to the edge of
+    the fabric.
+
+    4) Finally, the upper looper passes a loop of its thread through
+    that loop of the lower looper's thread and returns to its starting
+    position.
+
+    """,
+    paracord_hole_spacing = 1 * u"inch"
+)
 
 ################################################################################
 
