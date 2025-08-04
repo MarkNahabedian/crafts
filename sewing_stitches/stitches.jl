@@ -208,8 +208,9 @@ body {
 }
 
 .title {
-    font-size: 0.25in;
+    font-size: larger;
     text-align: center;
+    margin-top: 0.75in;
 }
 
 .thread-count {
@@ -338,7 +339,7 @@ function update_readme()
                 elseif m[:op] == "END"
                     discarding = false
                     # Now generate the new output:
-                    autogenerate_pages(io)
+                    AUTOGEN_OPS[m[:autogen]](io)
                     println(io, line)
                 else
                     error("Unsupported op in $m")
