@@ -212,6 +212,10 @@ include("elt.jl")
 STYLESHEET = """
 body {
     font-family: sans-serif;
+    margin-top: 0;
+    margin-bottom: 0;
+    margin-left: 0;
+    margin-right: 0;
 }
 
 .title {
@@ -222,6 +226,7 @@ body {
 
 .thread-count {
     text-align: end;
+    margin-top: 2ex;
 }
 
 .page {
@@ -274,7 +279,7 @@ function svg_punch_template(stitch::SewingStitch)
         :width => svg_inch(SVG_TEMPLATE_WIDTH),
         :height => svg_inch(SHEET_HEIGHT),
         :viewBox => "0 0 $vpwidth $vpheight",
-        :preserveAspectRatio => "xMaxyMid",
+        :preserveAspectRatio => "xMaxYMin meet",
         map(0 : (punch_count - 1)) do i
             elt("circle",
                 :r => svg_unitless(PUNCH_RADIUS),
