@@ -1,0 +1,81 @@
+
+2025-09-12:
+
+I went to the Cambridge Public Library's Hive maker space to try
+drawing these pacges on the Brother Cricut.
+
+I used Safari to open the stitch HTML files from Github Pages.  Chrome
+does not render the right margin SVG correctly.
+
+From Safari I used the print dialog to write a PDF file.
+
+The Cricut Design Space application does not open PDF files.  A staff
+member used Adobe Illustrator to generate a PNG file from the PDF.  In
+that process he needed to reintroduce the margins because the PDF was
+cropped to the bounding rectangle of the ink.  If I continue to use
+HTML files and this workflow then I should add a dotted or dashed
+border to the outermost HTML content element.
+
+TAKEAWAY:  Add visible border to HTML page.
+
+We did a test print onto a heavy weight sheet of paper.  It took quite
+a while to print.  The body text of the resulting page was hard to
+read because when the Cricut uses the pen to draw it follows the
+outline of the image, effectively turning the letters into an outline
+font.  This made the body text characters a bit wider and they
+blurred into each other.
+
+TAKEAWAY:  Use a thinner pen.
+
+TAKEAWAY:  Try using straight SVG with a vector font instead of HTML.
+
+
+2026-01-21
+
+Received an answer to my email inquiry of the Cambridge Public
+Library's hive.  When downloading Cricut Design Space they say it
+doesn't matter which Cricut I tell them I'm using.
+
+The machines at The Hive are "Cricut Maker" and "Cricut Maker 3".
+
+It can be downloaded from https://design.cricut.com/.
+
+
+2026-01-27
+
+Installed Cricut Design Space on my MacBook.  Maybe I could use
+Cricut's software to design my pages.
+
+I could try to render the text directly in SVG or try to script
+Inkscape.
+
+Inkscape has a Hershey text extension.
+
+These elements are part of the SVG 1.2 standard.  Thought not
+supported by any browsers, they are implemented in Inkscape:
+
+<flowRoot>
+<flowRegion>
+<flowPara>
+
+<flowRoot
+   xml:space="preserve"
+   id="flowRootExample"
+   style="font-size:14px;font-family:sans-serif;fill:#000000;">
+  <flowRegion
+     id="flowRegionBoundary">
+    <rect
+       id="rectBoundary"
+       width="200"
+       height="100"
+       x="50"
+       y="50" />
+  </flowRegion>
+  <flowPara
+     id="flowParaContent">This is a long string of text that will automatically wrap when it reaches the 200px width limit of the rectangular boundary defined in the flowRegion.</flowPara>
+</flowRoot>
+
+
+A document can be exported from Inkscape in Plain SVG Format to
+provide input for Cricut Design Space.
+
