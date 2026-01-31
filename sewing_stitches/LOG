@@ -79,3 +79,28 @@ supported by any browsers, they are implemented in Inkscape:
 A document can be exported from Inkscape in Plain SVG Format to
 provide input for Cricut Design Space.
 
+Applying Inkscape's Hershey Text Extension will layout the text and
+produce an SVG path element for each glyph.
+
+
+2026-01-31
+
+To convert the HTML files I have to SVG, Google Gemenii suggested that
+I use AIVector.ai (https://aivector.ai/html-to-svg-converter) or SVG
+AI (https://www.svgai.org/convert/html-to-svg) to convert to an SVG
+file and then use Inkscape to turn the SVG text into paths.
+
+AIVector.ai produces output with smaller, denser text than in the
+original HTML.
+
+SVG AI leaves too much space before the period at the end of a sen
+tence.
+
+Both just convert to an SVG file containing a single image element with
+a "data://" href.
+
+Aftter being told these results, Gemenii suggested opening the HTML in
+a browser and "Print > Save as PDF".  Import the resulting PDF file
+into Inkscape.  Select each block of text and do "Path > Object to
+path" (Shift+Ctrl+C).  Maybe then to "Path > Simplify" (Ctrl-L).
+
