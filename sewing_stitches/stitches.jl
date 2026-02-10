@@ -191,7 +191,7 @@ SewingStitch(
 
 SHEET_WIDTH = 8 * u"inch"
 SHEET_HEIGHT = 10 * u"inch"
-SVG_TEMPLATE_WIDTH = 1.5 * u"inch"
+SVG_TEMPLATE_WIDTH = 1.5 * u"inch"     # The margin where the punch holes go.
 PUNCH_RADIUS = 0.125 * u"inch" / 2
 
 # The distance of the punch holes from the edge is half of
@@ -273,6 +273,14 @@ function svg_punch_template(stitch::SewingStitch)
         :height => svg_inch(SHEET_HEIGHT),
         :viewBox => "0 0 $vpwidth $vpheight",
         :preserveAspectRatio => "xMaxYMin meet",
+        elt("rect",
+            "x" => 0,
+            "y" => 0,
+            "width" => SVG_TEMPLATE_WIDTH,
+            "height" => SHEET_HEIGHT,
+            "stroke-width" => "1px",
+            "stroke" => "black",
+            "fill" => "none"),
         map(0 : (punch_count - 1)) do i
             elt("circle",
                 :r => svg_unitless(PUNCH_RADIUS),
