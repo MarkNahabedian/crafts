@@ -104,3 +104,45 @@ a browser and "Print > Save as PDF".  Import the resulting PDF file
 into Inkscape.  Select each block of text and do "Path > Object to
 path" (Shift+Ctrl+C).  Maybe then to "Path > Simplify" (Ctrl-L).
 
+
+2026_02-10
+
+Installed Inkscape on my MacBook.
+
+The Hershey Text extension is already available under menu bar >
+Extensions > Text > Hershey.
+
+Opened two of my HTML files (101... and 504...) in Firefox (Chrome
+looses the hole markings on the right margin) and dif Print > Save to
+PDF.  Pages: Current.  Save.  The file gets saved to ~/Documents.
+
+Start Inkscape.  Select PDF file to open.  The Firefox "Print to PDF"
+saves these to ~/Documents.
+
+When importing a PDF to inkscape, these are the various options for
+the "clip" pulldown:
+
+ * Media Box: Crops to the physical size of the page.
+ * Crop Box: Crops to the intended display/print region.
+ * Trim Box: Crops to the final trimmed size.
+ * Art Box: Crops to the extent of the artwork.
+ * Bleed Box: Crops to the region including printer bleed marks. 
+
+Use Media Box.
+
+Opened a PDF in Inkscape and it looks ludicrously small on the canvas.
+
+From the top menu bar do View > Zoom > Document.  This gives us
+something we can see and looks right.
+
+Convert to single stroke fonts: menu bar > Extensions > Text > Hershey
+Text.  Fong face: Hershey Sans 1 stroke.  Don't select "preserve
+original text.  Cluse the Hershey dialog.  Menu bar > File > Save as.
+
+EXAMINING THE RESULTS:
+
+The punch holes are too oclose to the text.
+
+The title text is more than one line.  This might be because the HTML
+page width isn't being set.
+
