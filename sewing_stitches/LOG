@@ -141,8 +141,60 @@ original text.  Cluse the Hershey dialog.  Menu bar > File > Save as.
 
 EXAMINING THE RESULTS:
 
-The punch holes are too oclose to the text.
+The punch holes are too close to the text.
 
 The title text is more than one line.  This might be because the HTML
 page width isn't being set.
+
+
+2026_02-11
+
+Added width and height CSS values to STYLESHEET for html and body
+elements.
+
+Added script_generate_stitch_pages.jl which can be run as
+
+    julia script_generate_stitch_pages.jl
+
+to generate all of the stitch pages.
+
+Why is it writiing each file twice?
+
+
+PAGE CONVERSION PROCEDURE:
+
+Do this for each stitch file:
+
+1) Open a page in Firefox.
+Print...
+Save to PDF
+Pages: current
+under More Settings choose
+Scale 100; margings none
+and turn off "Print headers and footers>.
+Save.
+
+2) Open the resulting PDF file in Inkscape.
+Internal Import tab:
+Clip to: Media Box
+Fonts: draw all text
+Turn off Embed Images and Import Pages.
+Ok.
+
+3) Convert to single stroke fonts:
+menu bar > Extensions > Text > Hershey Text
+Font face: Hershey Sans 1 stroke.
+Don't select "preserve original text.
+Apply.
+Close the Hershey dialog.
+
+4) Menu bar > File > Save as.
+
+END OF PAGE CONVERSION PROCEDURE.
+
+AFter fixing the page size and refining the conversion procedure the
+pages look better.  It might be time to make trip to the Cricut again.
+
+Probably need to buy a fine tipped Sharpie and get the appropriate 3d
+model for the corresponding pen holder.
 
