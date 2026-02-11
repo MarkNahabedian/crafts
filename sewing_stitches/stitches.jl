@@ -201,6 +201,11 @@ PUNCH_RADIUS = 0.125 * u"inch" / 2
 include("elt.jl")
 
 STYLESHEET = """
+html, body {
+    width: $(svg_inch(SHEET_WIDTH));
+    height: $(svg_inch(SHEET_HEIGHT));
+}
+
 body {
     font-family: sans-serif;
     margin-top: 0;
@@ -289,4 +294,7 @@ function svg_punch_template(stitch::SewingStitch)
                 :class => "punch-hole")
         end...)
 end
+
+
+format_all_stitch_pages()
 
