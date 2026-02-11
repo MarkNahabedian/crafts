@@ -39,7 +39,10 @@ function format_stitch_page(stitch::SewingStitch)
     println("Wrote $filename")
 end
 
-for stitch in values(SEWING_STITCHES)
-    format_stitch_page(stitch)
+
+function format_all_stitch_pages()
+    for stitch in values(SEWING_STITCHES)
+        format_stitch_page(stitch)
+    end
 end
 
