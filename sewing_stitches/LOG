@@ -198,3 +198,67 @@ pages look better.  It might be time to make trip to the Cricut again.
 Probably need to buy a fine tipped Sharpie and get the appropriate 3d
 model for the corresponding pen holder.
 
+
+2026_02-12
+
+I asked Google Gemenii if it was possible to automate the procedure.
+It suggested this command line:
+
+  inkscape input.pdf --batch-process --actions="select-all;org.ekips.filter.hershey.set_text;export-filename:output.svg;export-do"
+
+Gemenii also suggests adding "export-plain-svg" to that command line.
+
+For now this seems like there are too many pieces to get together.
+
+
+Trying to open up the text a bit, I added these stylesheet settings
+for the descriptive text:
+
+    font-size: 0.25in;
+    line-height: 1.5;
+
+but this causes the description for stitch 504 to overrun a page.
+
+The stitch 503 description fits on one page with these settings.
+
+Using
+
+    font-size: 0.2in;
+
+causes stitch 504 to fit on one page.
+
+
+Google Gemenii suggested this page for advice about generating files
+for Cricut:
+
+https://www.reddit.com/r/Inkscape/comments/11m1otz/how_to_make_inkscape_work_with_cricut/#:~:text=You%20don't%20need%20to,objects%20to%20paths%20%2D%20text%20included.
+
+It says:
+
+You don't need to save the Inkscape file as plain svg. Inkscape's svg
+output works fine and is what I use with my Cricut. Nor do you need to
+specifically select inches - I use cm or mm for both canvas and object
+dimensions.
+
+What you DO need to do in order for the Cricut to correctly read the
+Inkscape svg file information is convert all objects to paths - text
+included. Once converted to paths you need to place similar coloured
+paths into their own dedicated and seperate layers. For example, I
+name a layer BLACK and I put the relevant path in that layer. I also
+name the path BLACK. Ditto for red. Create a layer named RED, and put
+the path you want cut red in that layer. Nse the path RED. And so
+on... DO NOT CREATE GROUPS! You want layers of paths.
+
+Once the image is complete and you are ready to start cutting make a
+backup (if you haven't already...)
+
+You can save the file as a normal Inkscape svg and drag and drop the
+file into the DesignSpace dialog that asks you to select your local
+file. Obviously you can just navigate to the file on your computer and
+select it that way too.
+
+You will find the svg is of the correct dimensions, colours, and
+layers.
+
+END OF QUOTE FROM REDDIT.
+
