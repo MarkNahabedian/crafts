@@ -1,8 +1,9 @@
 <html>
   <head>
-    <style>html, body {
-    width: 8.0000in;
-    height: 10.0000in;
+    <style>
+html, body {
+    width: $(svg_inch(SHEET_WIDTH));
+    height: $(svg_inch(SHEET_HEIGHT));
 }
 
 body {
@@ -36,6 +37,8 @@ body {
     display: inline-block;
     flex-grow: 1;
     width: 2in;
+    font-size: 0.2in;
+    line-height: 1.5;
 }
 
 .example-stitches {
@@ -50,7 +53,7 @@ punch-hole {
 }
 
 @page {
-    size: 8.0000in 10.0000in portrait;
+    size: $(svg_inch(SHEET_WIDTH)) $(svg_inch(SHEET_HEIGHT)) portrait;
 }
 
 @media print {

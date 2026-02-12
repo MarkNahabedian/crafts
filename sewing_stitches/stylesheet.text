@@ -35,6 +35,8 @@ body {
     display: inline-block;
     flex-grow: 1;
     width: 2in;
+    font-size: 0.2in;
+    line-height: 1.5;
 }
 
 .example-stitches {
