@@ -3,8 +3,8 @@
 function html_file_name(stitch::SewingStitch)
     name = replace(stitch.name,
                    ' ' => '_',
-                   '(' => '',
-                   ')' => '')
+                   '(' => '_',
+                   ')' => '_')
 
     "$(stitch.iso_number)-$name.html"
 end
