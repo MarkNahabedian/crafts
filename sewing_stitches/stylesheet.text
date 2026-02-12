@@ -1,0 +1,64 @@
+
+html, body {
+    width: $(svg_inch(SHEET_WIDTH));
+    height: $(svg_inch(SHEET_HEIGHT));
+}
+
+body {
+    font-family: sans-serif;
+    margin-top: 0;
+    margin-bottom: 0;
+    margin-left: 0;
+    margin-right: 0;
+    border: 1px;
+}
+
+.title {
+    font-size: 0.4in;
+    text-align: center;
+    margin-top: 0.75in;
+}
+
+.thread-count {
+    text-align: end;
+    margin-top: 2ex;
+}
+
+.page {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    page-break-inside: avoid;
+}
+
+.text {
+    display: inline-block;
+    flex-grow: 1;
+    width: 2in;
+}
+
+.example-stitches {
+    display: inline-block;
+    margin-right: 0.25in;
+    font-size: 0.3in;
+}
+
+punch-hole {
+    fill: blue;
+    stroke-width: 0;
+}
+
+@page {
+    size: $(svg_inch(SHEET_WIDTH)) $(svg_inch(SHEET_HEIGHT)) portrait;
+}
+
+@media print {
+    .page {
+        padding: 0;
+        margin-top: 0.5in;
+        margin-bottom: 0.5in;
+        margin-left: 1in;
+        margin-right: 0.25in;
+    }
+}
+

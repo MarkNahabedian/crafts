@@ -16,11 +16,17 @@ function description_html(stitch::SewingStitch)
     end
 end
 
+function get_stylesheet()
+    open(joinpath(@__DIR__, "stylesheet.text"), "r") do io
+        String(read(io))
+    end
+end
+
 function format_stitch_page(stitch::SewingStitch)
     doc =
         elt("html",
             elt("head",
-                elt("style", STYLESHEET)),
+                elt("style", get_stylesheet())),
             elt("body",
                 elt("div", "class" => "page",
                     elt("div", "class" => "text",
