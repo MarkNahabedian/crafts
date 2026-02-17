@@ -2,8 +2,8 @@
   <head>
     <style>
 html, body {
-    width: $(svg_inch(SHEET_WIDTH));
-    height: $(svg_inch(SHEET_HEIGHT));
+    width: 8.0000in;
+    height: 10.0000in;
 }
 
 body {
@@ -47,13 +47,15 @@ body {
     font-size: 0.3in;
 }
 
-punch-hole {
-    fill: blue;
-    stroke-width: 0;
+svg circle.punch-hole {
+    fill: none;
+    stroke: black;
+    stroke-width = 1px;
+    vector-effect: non-scaling-stroke;
 }
 
 @page {
-    size: $(svg_inch(SHEET_WIDTH)) $(svg_inch(SHEET_HEIGHT)) portrait;
+    size: 8.0000in 10.0000in portrait;
 }
 
 @media print {
@@ -75,10 +77,10 @@ punch-hole {
         <div class="thread-count">3 threads</div>
         <p>
           <div>
-  <p>This stitch uses one top needle and two loopers.  We start with the needle in its topmost position, the upper looper holding a loop of its thread across the top surface of the fabric under the needle, and the lower looper retracted at its poinit of motion that is furthest from the edge of the fabric.</p>
+  <p>This stitch uses one top needle and two loopers.  We start with the needle in its topmost position, the upper looper holding a loop of its thread across the top surface of the fabric under the needle, and the lower looper retracted at its point of motion that is furthest from the edge of the fabric.</p>
   <ul>
     <li>
-      <p>The upper needle passes a loop of the needle thread through that loop and the fabric.</p>
+      <p>The upper needle passes a loop of the needle thread through the top loop and the fabric.</p>
     </li>
     <li>
       <p>The lower loopper moves towards the edge while passing a loop of its thread through the needle thread loop under the fabric. Meanwhile, the upper looper moves to the edge of the fabric.</p>

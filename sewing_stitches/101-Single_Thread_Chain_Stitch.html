@@ -2,8 +2,8 @@
   <head>
     <style>
 html, body {
-    width: $(svg_inch(SHEET_WIDTH));
-    height: $(svg_inch(SHEET_HEIGHT));
+    width: 8.0000in;
+    height: 10.0000in;
 }
 
 body {
@@ -47,13 +47,15 @@ body {
     font-size: 0.3in;
 }
 
-punch-hole {
-    fill: blue;
-    stroke-width: 0;
+svg circle.punch-hole {
+    fill: none;
+    stroke: black;
+    stroke-width = 1px;
+    vector-effect: non-scaling-stroke;
 }
 
 @page {
-    size: $(svg_inch(SHEET_WIDTH)) $(svg_inch(SHEET_HEIGHT)) portrait;
+    size: 8.0000in 10.0000in portrait;
 }
 
 @media print {
@@ -76,11 +78,12 @@ punch-hole {
         <p>
           <div>
     A hook on the under side of the fabric is holding the loop
-    from the previous stitch.  The threaded needle passes into the
-    fabric and through that loop and forms a new loop on the
-    underside. The hook drops the previous loop and catches the
-    new one.  The needle is retracted and the fabric advanced,
-    pulling the stitch tight.
+    from the previous stitch.  The threaded needle is above the
+    fabric.  The needle passes into the fabric and through that
+    under side loop and forms a new loop on the underside. The
+    hook drops the previous loop and catches the new one.  The
+    needle is retracted and the fabric advanced, pulling the
+    stitch tight.
 
 </div>
         </p>

@@ -2,8 +2,8 @@
   <head>
     <style>
 html, body {
-    width: $(svg_inch(SHEET_WIDTH));
-    height: $(svg_inch(SHEET_HEIGHT));
+    width: 8.0000in;
+    height: 10.0000in;
 }
 
 body {
@@ -47,13 +47,15 @@ body {
     font-size: 0.3in;
 }
 
-punch-hole {
-    fill: blue;
-    stroke-width: 0;
+svg circle.punch-hole {
+    fill: none;
+    stroke: black;
+    stroke-width = 1px;
+    vector-effect: non-scaling-stroke;
 }
 
 @page {
-    size: $(svg_inch(SHEET_WIDTH)) $(svg_inch(SHEET_HEIGHT)) portrait;
+    size: 8.0000in 10.0000in portrait;
 }
 
 @media print {
@@ -75,18 +77,13 @@ punch-hole {
         <div class="thread-count">2 threads</div>
         <p>
           <div>
-The top thread is threaded through a needle.  The edge thread is
-threaded through a looper.  The looper can move the edge thread
-around the edge to either surface of the fabric.  With the looper
-holding a loop of the bottom thread on the upper surface of the
-fabric, the needle passes the top thread through that loop and
-through the fabric.  The looper moves to the underside of the
-fabrid and catches the loop of the needle thread as the needle
-retracts, passing a new loop of the looper thread through the loop
-in the needle thread before the looper returns to the top surface
-of the fabric for the next stitch.
-
+  <p>Interlocking loops are formed at the edge of the fabric.</p>
+  <p>The top thread is threaded through a needle.  The edge thread is threaded through the lower looper.  The upper looper is not threaded but is instead fitted with a special hook called a converter.</p>
+  <p>For the sake of exposition we start the description with the needle penetrating into the fabric.</p>
+  <p>When the needle is at its lowest position and is rising upwards, its thread forms a loop.  The lower looper moves from left to right behind the needle, passing into and taking up the needle thread&#39;s loop.  Once the tip of the lower looper has entered the needle thread loop, the needle can continue its upward motion back through the fabric.</p>
+  <p>When the lower looper reaches its rightmost position, the upper looper can move leftwards, hooking the lower looper thread and carrying it leftwards towards the needle.  The needle can then pass down through that loop in the lower thread on its next downward motion.  The upper looper can then move rightwards, releasing the lower looper&#39;s thread.</p>
 </div>
+
         </p>
       </div>
       <div class="example-stitches">

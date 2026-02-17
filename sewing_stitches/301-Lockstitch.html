@@ -2,8 +2,8 @@
   <head>
     <style>
 html, body {
-    width: $(svg_inch(SHEET_WIDTH));
-    height: $(svg_inch(SHEET_HEIGHT));
+    width: 8.0000in;
+    height: 10.0000in;
 }
 
 body {
@@ -47,13 +47,15 @@ body {
     font-size: 0.3in;
 }
 
-punch-hole {
-    fill: blue;
-    stroke-width: 0;
+svg circle.punch-hole {
+    fill: none;
+    stroke: black;
+    stroke-width = 1px;
+    vector-effect: non-scaling-stroke;
 }
 
 @page {
-    size: $(svg_inch(SHEET_WIDTH)) $(svg_inch(SHEET_HEIGHT)) portrait;
+    size: 8.0000in 10.0000in portrait;
 }
 
 @media print {
