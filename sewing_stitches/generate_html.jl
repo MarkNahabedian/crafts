@@ -21,9 +21,26 @@ function description_html(stitch::SewingStitch)
 end
 
 function get_stylesheet()
-    open(joinpath(@__DIR__, "stylesheet.css"), "r") do io
-        String(read(io))
+    css_template = 
+        open(joinpath(@__DIR__, "stylesheet.css"), "r") do io
+            String(read(io))
+        end
+    # Substitute The $ expressions:
+    result = IOBuffer()
+    i = firstindex(css_template)
+    while i <= ncodeunits(css_template)
+        dollar = findnext('$', css_template, i)
+        if dollar === nothing
+            write(result, css_template[i:end])
+            break
+        else
+            write(result, css_template[i : dollar - 1])
+            expr, next_i = Meta.parse(css_template, dollar + 1, greedy=false)
+            write(result, eval(expr))
+            i = next_i
+        end
     end
+    String(take!(result))
 end
 
 function format_stitch_page(stitch::SewingStitch)
