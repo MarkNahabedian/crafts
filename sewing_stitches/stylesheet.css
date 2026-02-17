@@ -45,9 +45,11 @@ body {
     font-size: 0.3in;
 }
 
-punch-hole {
-    fill: blue;
-    stroke-width: 0;
+svg circle.punch-hole {
+    fill: none;
+    stroke: black;
+    stroke-width = 1px;
+    vector-effect: non-scaling-stroke;
 }
 
 @page {
