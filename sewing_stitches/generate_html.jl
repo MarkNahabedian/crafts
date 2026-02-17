@@ -21,7 +21,7 @@ function description_html(stitch::SewingStitch)
 end
 
 function get_stylesheet()
-    open(joinpath(@__DIR__, "stylesheet.text"), "r") do io
+    open(joinpath(@__DIR__, "stylesheet.css"), "r") do io
         String(read(io))
     end
 end
