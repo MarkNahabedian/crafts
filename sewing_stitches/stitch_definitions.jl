@@ -27,11 +27,12 @@ SewingStitch(
     description = """
 
         A hook on the under side of the fabric is holding the loop
-        from the previous stitch.  The threaded needle passes into the
-        fabric and through that loop and forms a new loop on the
-        underside. The hook drops the previous loop and catches the
-        new one.  The needle is retracted and the fabric advanced,
-        pulling the stitch tight.
+        from the previous stitch.  The threaded needle is above the
+        fabric.  The needle passes into the fabric and through that
+        under side loop and forms a new loop on the underside. The
+        hook drops the previous loop and catches the new one.  The
+        needle is retracted and the fabric advanced, pulling the
+        stitch tight.
 
     """,
     paracord_hole_spacing = 0.5 * u"inch")
@@ -54,6 +55,7 @@ SewingStitch(
     paracord_hole_spacing = 0.5 * u"inch")
 
 SewingStitch(
+    # 301 https://www.youtube.com/watch?v=zk9h8ByMcvg
     iso_number = 301,
     name = "Lockstitch",
     number_of_threads = 2,
@@ -80,23 +82,37 @@ SewingStitch(
     number_of_threads = 2,
     confined_to_edge = true,
     reidermeister_only = true,
-    description = """
+    description = md"""
+
+    Interlocking loops are formed at the edge of the fabric.
 
     The top thread is threaded through a needle.  The edge thread is
-    threaded through a looper.  The looper can move the edge thread
-    around the edge to either surface of the fabric.  With the looper
-    holding a loop of the bottom thread on the upper surface of the
-    fabric, the needle passes the top thread through that loop and
-    through the fabric.  The looper moves to the underside of the
-    fabrid and catches the loop of the needle thread as the needle
-    retracts, passing a new loop of the looper thread through the loop
-    in the needle thread before the looper returns to the top surface
-    of the fabric for the next stitch.
+    threaded through the lower looper.  The upper looper is not
+    threaded but is instead fitted with a special hook called a
+    converter.
+
+    For the sake of exposition we start the description with the
+    needle penetrating into the fabric.
+
+    When the needle is at its lowest position and is rising upwards,
+    its thread forms a loop.  The lower looper moves from left to
+    right behind the needle, passing into and taking up the needle
+    thread's loop.  Once the tip of the lower looper has entered the
+    needle thread loop, the needle can continue its upward motion back
+    through the fabric.
+
+    When the lower looper reaches its rightmost position, the upper
+    looper can move leftwards, hooking the lower looper thread and
+    carrying it leftwards towards the needle.  The needle can then
+    pass down through that loop in the lower thread on its next
+    downward motion.  The upper looper can then move rightwards,
+    releasing the lower looper's thread.
 
     """,
     paracord_hole_spacing = 1 * u"inch")
 
 SewingStitch(
+    # 504 https://www.youtube.com/watch?v=KMrsT6jPR7s
     iso_number = 504,
     name = "Three Thread OverEdge (Serging)",
     number_of_threads = 3,
@@ -107,11 +123,11 @@ SewingStitch(
     This stitch uses one top needle and two loopers.  We start with
     the needle in its topmost position, the upper looper holding a
     loop of its thread across the top surface of the fabric under the
-    needle, and the lower looper retracted at its poinit of motion
+    needle, and the lower looper retracted at its point of motion
     that is furthest from the edge of the fabric.
 
-    - The upper needle passes a loop of the needle thread through that
-      loop and the fabric.
+    - The upper needle passes a loop of the needle thread through the
+      top loop and the fabric.
 
     - The lower loopper moves towards the edge while passing a loop
       of its thread through the needle thread loop under the fabric.
