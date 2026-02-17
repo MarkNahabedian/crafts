@@ -184,7 +184,7 @@ Ok.
 3) Convert to single stroke fonts:
 menu bar > Extensions > Text > Hershey Text
 Font face: Hershey Sans 1 stroke.
-Don't select "preserve original text.
+Don't select "preserve original text".
 Apply.
 Close the Hershey dialog.
 
@@ -261,4 +261,18 @@ You will find the svg is of the correct dimensions, colours, and
 layers.
 
 END OF QUOTE FROM REDDIT.
+
+
+2026-02-17
+
+I changed the punch holes from filled to stroked unfilled circles in
+hopes that they would be kept as circles, but I guess their circleness
+is lost in the PDF.
+
+I Removed the extraneouls ".html" component from the ".pdf" and ".svg"
+file names.
+
+Corrected some typos and replaced the 503 stitch definition.
+
+Generated new HTML and SVG files.
 
