@@ -276,3 +276,13 @@ Corrected some typos and replaced the 503 stitch definition.
 
 Generated new HTML and SVG files.
 
+
+2026-02-18
+
+If I make the punch holes ssquares instead of circles, will Inkscape
+rediscover them as squares aftter theyre munged by PDF format?
+
+Though the punch marks do not appear as rect elements, they do appear
+as much simpler paths with only four segments, so the change is worth
+making.
+

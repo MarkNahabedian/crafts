@@ -45,7 +45,7 @@ body {
     font-size: 0.3in;
 }
 
-svg circle.punch-hole {
+svg .punch-hole {
     fill: none;
     stroke: black;
     stroke-width = 1px;

@@ -91,10 +91,18 @@ function svg_punch_template(stitch::SewingStitch)
             "stroke" => "black",
             "fill" => "none"),
         map(0 : (punch_count - 1)) do i
+            #=
             elt("circle",
                 :r => svg_unitless(PUNCH_RADIUS),
                 :cx => svg_unitless(SVG_TEMPLATE_WIDTH / 2),
                 :cy => svg_unitless(end_margin + i * stitch.paracord_hole_spacing),
+                :class => "punch-hole")
+            =#
+            elt("rect",
+                :x => svg_unitless(SVG_TEMPLATE_WIDTH / 2 - PUNCH_RADIUS),
+                :y => svg_unitless(end_margin + i * stitch.paracord_hole_spacing - PUNCH_RADIUS),
+                :width => svg_unitless(2 * PUNCH_RADIUS),
+                :height => svg_unitless(2 * PUNCH_RADIUS),
                 :class => "punch-hole")
         end...)
 end
