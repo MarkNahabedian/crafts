@@ -286,3 +286,106 @@ Though the punch marks do not appear as rect elements, they do appear
 as much simpler paths with only four segments, so the change is worth
 making.
 
+When I import the Inkscape generated SVG file into Cricut Design
+Studio, the result is both blurry and cropped.  Google Gemeni suggests
+that is is the result of a mismatch between default resolutions
+between Inkscape and Cricut.
+
+FROM GEMENI:
+
+The complex chain of conversions—from HTML → PDF → Inkscape → SVG—is
+introducing scaling and rendering errors at each step. Because Cricut
+Design Space defaults to 72 DPI for cuts, but Inkscape and modern
+browsers use 96 DPI, your 8x10" design is likely importing as roughly
+10.6" x 13.3", causing it to crop and look fuzzy.
+
+Phase 1: Fixing the Inkscape → Cricut Handshake To ensure the 8x10"
+dimensions are preserved exactly: Set Scale to 72: In Inkscape, go to
+File > Document Properties. Set "Display units" and "Custom size
+units" to inches. In the Scale X box, change the value to 72.  Define
+Document Size: Ensure the page size is set to exactly 8 x 10 in. If
+your content is outside this area, it will likely be cropped upon
+import.
+
+Save as "Plain SVG": Do not use "Inkscape SVG" or "Optimized SVG." Use
+Plain SVG to strip the metadata that often confuses Cricut's renderer.
+
+Phase 2: Resolving "Blurry" Path Issues Since you are using Hershey
+single-stroke fonts, any "blurriness" in Design Space is usually a
+preview artifact or a stroke-width issue.
+
+Convert Strokes to Paths: Even if it looks like a path, Cricut prefers
+solid shapes. Select your text and go to Path > Stroke to Path. This
+turns the single line into a "traceable" object.  Coordinate
+Precision: If lines look jagged or distorted, go to Edit > Preferences
+> Input/Output > SVG Output and ensure Numeric precision is at least 3
+and Path string format is set to Absolute.
+
+Phase 3: Optimizing the HTML-to-PDF Step
+
+Firefox's "Print to PDF" often adds margins that shrink your 8x10"
+content, leading to cropping later.  Print Settings: In the Firefox
+print dialog, set Margins to None and ensure Scale is set to 100% (not
+"Fit to Page").  Alternative: If possible, use a browser extension
+like SingleFile or a "Save as SVG" extension to bypass the PDF step
+entirely, which is the most common source of scaling drift.
+
+END OF GEMENI QUOTE.
+
+
+REVISED PAGE CONVERSION PROCEDURE:
+
+Do this for each stitch file:
+
+1) Open a page in Firefox.
+Print...
+Save to PDF
+Pages: current
+under More Settings choose
+Scale 100; margings none
+and turn off "Print headers and footers>.
+Save.
+
+2) Open the resulting PDF file in Inkscape.
+New Document
+File > New From Template, custom, Cricut 72dpi
+File > Import...
+Clip to: Media Box
+Fonts: draw all text
+Turn off Embed Images and Import Pages.
+Ok.
+
+3) Verify document properties
+File > Document Properties...
+Select inches for both units.
+Width: 8
+Height: 10
+Viewbox: 0 0 576 720
+
+4) Convert to single stroke fonts:
+menu bar > Extensions > Text > Hershey Text
+Font face: Hershey Sans 1 stroke.
+Don't select "preserve original text".
+Apply.
+Close the Hershey dialog.
+
+5) Menu bar > File > Save as
+Select "Plain SVG" file format
+Fixup the file name.
+Save.
+
+6) Open in Cricut Design Space
+File > New Canvas
+Blank Canvas
+Upload (from near bottom of left toolbar)
+Upload image
+browse to select file
+
+END OF PAGE CONVERSION PROCEDURE.
+
+
+I think the document appears a bit clearer in Cricut Design Space, but
+maybe not clear enough.
+
+Maybe try with a real device and pen.
+
