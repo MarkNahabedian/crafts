@@ -389,3 +389,17 @@ maybe not clear enough.
 
 Maybe try with a real device and pen.
 
+
+2026-04-15
+
+I moved the procedure to its own file: PROCEDURE.md.
+
+I noticed that the SVG paths for the text include "z" path commands.
+Why would that be for a single stroke font?
+
+
+2026-04-16
+
+Implemented parser for SVG paths.  I hope to use this to remove
+z/ClosePath components from SVG paths.
+
