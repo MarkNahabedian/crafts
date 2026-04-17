@@ -403,3 +403,23 @@ Why would that be for a single stroke font?
 Implemented parser for SVG paths.  I hope to use this to remove
 z/ClosePath components from SVG paths.
 
+
+2026-04-17
+
+The SVG files out of Inkscape look fine in a browser but look like
+crap in Cricut Design Space.  It seems to be determining the outlines
+of the glyphs.
+
+The SVG files from Inkscape have CSS fill properties that are not "none".
+
+The current version of svg_cleanup.jl makes a mess of things.  It's
+safe if the calls to cleanup_path_d! and cleanup_path_style! are
+commented out.
+
+If just cleanup_path_d! is enables, then the glyphs are somewhat
+recognizable but are kind of staggered.  Maybe rather than just
+removing the Z commands we need to replace them with M commands.
+
+We need to be more surgical about how we modify the style.  Maybe we
+need the Vector effect thing.
+
