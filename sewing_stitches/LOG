@@ -423,3 +423,14 @@ removing the Z commands we need to replace them with M commands.
 We need to be more surgical about how we modify the style.  Maybe we
 need the Vector effect thing.
 
+
+2026-04-18
+
+I fixed the problems with svg_cleanup.jl.jl.  Added "vector-effect:
+non-scaling-stroke" to the style and replaced the ClosePath path
+components with appropriate MoveTo commands.  The output now looks
+good in the browser.
+
+The result comes out ludicrously small when imported into Cricut
+Design Space though.
+

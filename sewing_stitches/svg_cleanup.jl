@@ -47,15 +47,23 @@ function cleanup_path_d!(pathnode)
     d = pathnode["d"]
     parsed = parse_svg_path(d)
     # Don't modify the path if it's for a punch hole:
-    if length(parsed) != 5
-        pathnode["d"] = to_string(filter(parsed) do cmd
-                                      !isa(cmd, ClosePath)
-                                  end)
+    if length(parsed) == 5
+        return
     end
+    start = (0, 0)
+    for index in 1 : length(parsed)
+        cmd = parsed[index]
+        if cmd isa MoveTo
+            start = end_point(cmd, start...)
+        elseif cmd isa ClosePath
+            parsed[index] = MoveTo(false, start...)
+        end
+    end
+    pathnode["d"] = to_string(parsed)
 end
 
 function cleanup_path_style!(pathnode)
     # styles = split(pathnode["style"], ";", keepempty=false)
-    pathnode["style"] = "stroke:#000000;fill:none;"
+    pathnode["style"] = "stroke:#000000;fill:none;vector-effect:non-scaling-stroke;"
 end
 
