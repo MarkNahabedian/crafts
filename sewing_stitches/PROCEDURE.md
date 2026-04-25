@@ -24,6 +24,7 @@ Save to PDF
 Pages: current
 under More Settings choose
 Scale 100; margins none
+Pages per sheet: 1
 and turn off "Print headers and footers" and "print backgrounds".
 SDave
 Remove ".html" from file name in dialog.

@@ -426,11 +426,38 @@ need the Vector effect thing.
 
 2026-04-18
 
-I fixed the problems with svg_cleanup.jl.jl.  Added "vector-effect:
+I fixed the problems with svg_cleanup.jl.  Added "vector-effect:
 non-scaling-stroke" to the style and replaced the ClosePath path
 components with appropriate MoveTo commands.  The output now looks
 good in the browser.
 
 The result comes out ludicrously small when imported into Cricut
 Design Space though.
+
+Google Gemeni suggests
+
+  Set Units to Inches: In your design program (like Inkscape or
+  Illustrator), set the document units to inches.
+
+  Inkscape Setup: In Inkscape, check that your Display Units are set
+  to inches, the page size is reasonable, and that you select "Resize
+  Page to Drawing or Selection" before saving.
+
+
+2026-04-25
+
+If I edit 101-Single_Thread_Chain_Stitch-postprocessed.svg by hand to
+set svg.width and svg.size to "8in" and "10in" then the image imports
+into Cricut Design Studio at a viewable size but the text is
+incorrect.  The punch boxes look fine though.  The file looks fine in
+Google Chrome.
+
+Maybe we should give up on Cricut.  There are on-lline services
+(e.g. https://printree.net) that will print a one-off design onto
+fabric.
+
+Fabric can also be printed on using an inkjet printer if the fabric is
+first stiffened with freezer paper as described in this video:
+https://www.google.com/search?q=how+might+I+print+an+SVG+file+onto+fabric&oq=how+might+I+print+an+SVG+file+onto+fabric&gs_lcrp=EgZjaHJvbWUyBggAEEUYOTIHCAEQIRigATIHCAIQIRigATIHCAMQIRigATIHCAQQIRigATIHCAUQIRirAjIHCAYQIRiPAtIBCTE1Njc4ajBqNKgCA7ACAfEFXVZoW-TjBvY&sourceid=chrome&ie=UTF-8#fpstate=ive&vld=cid:09169290,vid:A6xnLG6uDW0,st:0.
+Inkjet ink will bleed and run when it gets wet though.
 
