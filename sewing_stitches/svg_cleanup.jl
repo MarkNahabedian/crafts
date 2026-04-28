@@ -7,6 +7,7 @@ using EzXML
 using EzXML: ELEMENT_NODE
 
 include("parse_svg_path.jl")
+include("stitches.jl")        # for SHEET_WIDTH ND SHEET_HEIGHT
 
 function postprocess_svg(filename::AbstractString)
     doc = readxml(filename)
@@ -38,9 +39,15 @@ end
 function postprocess_this!(node::EzXML.Node, tag::Any)
 end
 
+function postprocess_this!(svg::EzXML.Node, tag::Val{:svg})
+    @assert svg["width"] == "8in"
+    @assert svg["height"] == "10in"
+    @assert svg["viewBox"] == "0 0 576 720"
+end
+
 function postprocess_this!(pathnode::EzXML.Node, tag::Val{:path})
     cleanup_path_d!(pathnode)
-    # cleanup_path_style!(pathnode)
+    cleanup_path_style!(pathnode)
 end
 
 function cleanup_path_d!(pathnode)
