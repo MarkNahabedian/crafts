@@ -6,11 +6,12 @@ html, body {
 
 body {
     font-family: sans-serif;
-    margin-top: 0;
-    margin-bottom: 0;
-    margin-left: 0;
-    margin-right: 0;
-    border: 1px;
+    margin-top: 1em;
+    margin-bottom: 1em;
+    margin-left: 1em;
+    margin-right: 1em;
+    border: solid black 1px;
+    padding-left: 1in;
 }
 
 .title {
