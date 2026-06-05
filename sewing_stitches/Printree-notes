@@ -1,0 +1,53 @@
+Printree (printree.net) sent me their sample swatch book.
+
+These are the fabrics to consider:
+
+  1) Cotton Canvas            263.7 gram per square meter
+  2) linen                    195.9 gram per square meter
+  3) polycanvas polyester
+  4) canvas polyester crepe   380 gram per square meter
+
+The fabric weights are taken from
+https://printree.net/bbs_detail.php?bbs_num=13&id=&tb=bbs_faq&pg=1.
+
+1, 2, and 3 were in the swatch book.  3 was not on the fabric weight
+chart.
+
+3 is the heavyest/stiffest.
+
+Fabric widths:
+
+  * canvas:  43 inch
+  * linen:   59 inch
+
+
+They recommend uploading an image file at 200dpi resolution even
+though the swatch book says its samples were printed at 300dpi.
+
+These are the supported file types: JPEG, PNG, TIFF, or PSD.  TIFF
+might be the best choice.
+
+In the swatch book, the largest text shown was 12pt.  This seemed
+quite clear on the fabrics of interest.  Our CSS file uses 0.2, 0.3
+and 0.4 inch for font-size.  These are all bigger than 1/6 inch (0.167
+inch) for 12 point text.
+
+
+How do we layout our pages onto the fabric?
+
+If we use CSS borders to provide the lines to cut on then all of the
+space between the endge of the page and the content would be accounted
+for by CSS padding.  CSS margin would just be used for the space
+between the cut lines.  That includes the left edge gutter for the
+binding, the top and bottom "margins", and the space between the right
+edge and the "thread" holes.
+
+CSS margin might be less relevant since what matters is how the actual
+graphics anre spaces across and along the length of the fabric.
+
+TiffImages.jl
+MosaicViews.jl
+
+
+
+
