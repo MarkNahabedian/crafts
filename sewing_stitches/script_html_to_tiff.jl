@@ -14,7 +14,10 @@ for stitch in values(SEWING_STITCHES)
              "--print-to-pdf=$pdffile", htmlfile]);
         wait=true)
     # sips -s format tiff "temp.pdf" --out "${file%.html}.tiff"
-    run(Cmd(["sips", "-s", "format", "tiff", pdffile, "--out", tiffile]);
+    run(Cmd(["sips", "-s", "format", "tiff",
+             "--setProperty",  "dpiWidth", 200,
+             "--setProperty",  "dpiHeight", 200,
+             pdffile, "--out", tiffile]);
         wait=true)
     println("Wrote $tiffile")
 end
