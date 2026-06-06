@@ -1,4 +1,29 @@
+using Unitful
 using TiffImages
+
+function image_size_units(img::TiffImages.AbstractTIFF)
+    u = ifds(img)[TiffImages.RESOLUTIONUNIT].data
+    if u == 2
+        u"inch"
+    elseif u == 3
+        u"cm"
+    else
+        error("Unknown RESOLUTIONUNIT tag value: $u")
+    end
+end
+
+function image_width(img::TiffImages.AbstractTIFF)
+    imagewidth = convert(Rational{Int}, ifds(img)[TiffImages.IMAGEWIDTH].data)
+    xresolution = convert(Rational{Int}, ifds(img)[TiffImages.XRESOLUTION].data)
+    return image_size_units(img) * imagewidth / xresolution
+end
+
+function image_height(img::TiffImages.AbstractTIFF)
+    imagelength = convert(Rational{Int}, ifds(img)[TiffImages.IMAGELENGTH].data)
+    yresolution = convert(Rational{Int}, ifds(img)[TiffImages.YRESOLUTION].data)
+    return image_size_units(img) * imagelength / yresolution
+end
+
 
 # See # https://www.loc.gov/preservation/digital/formats/content/tiff_tags.shtml
 # for tag definitions.
@@ -8,13 +33,13 @@ INTERESTING_TIFF_TAGS = [
     TiffImages.IMAGELENGTH,
     TiffImages.XRESOLUTION,
     TiffImages.YRESOLUTION,
-    TiffImages.RESOLUTIONUNIT
+    TiffImages.RESOLUTIONUNIT 
 ]
 
 TAG_VALUE_DISPLAY_FUNCTIONS = Dict([
     TiffImages.XRESOLUTION => (x -> convert(Rational{Int}, x)),
     TiffImages.YRESOLUTION => (y -> convert(Rational{Int}, y)),
-    TiffImages.RESOLUTIONUNIT => (u -> u==1 ? "none" : u==2 ? "inch" : u==3 ? "cm" : unsupported)
+    TiffImages.RESOLUTIONUNIT => image_size_units
 ])
 
 tag_value_display_function(tag) = get(TAG_VALUE_DISPLAY_FUNCTIONS, tag, identity)
@@ -47,6 +72,7 @@ automatically reverts to 2 (Inches).
 =#
 
 function size_info(img::TiffImages.AbstractTIFF)
+    println("\n$(image_width(img)) ", Char(0xD7), " $(image_height(img))")
     for tag in INTERESTING_TIFF_TAGS
         try
             println("#", Int(tag), "\t", tag, "\t",
@@ -55,6 +81,7 @@ function size_info(img::TiffImages.AbstractTIFF)
         end
     end
 end
+
 
 TIFF_FILES = Dict()
 
