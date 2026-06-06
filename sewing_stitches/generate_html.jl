@@ -1,13 +1,8 @@
 # HTML backend
 
-function html_file_name(stitch::SewingStitch)
-    name = replace(stitch.name,
-                   ' ' => '_',
-                   '(' => '_',
-                   ')' => '_')
+html_file_name(stitch::SewingStitch) =
+    base_file_name(stitch) * ".html"
 
-    "$(stitch.iso_number)-$name.html"
-end
 
 function description_html(stitch::SewingStitch)
     if stitch.description isa Markdown.MD

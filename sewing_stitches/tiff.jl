@@ -1,6 +1,9 @@
 using Unitful
 using TiffImages
 
+tiff_file_name(stitch::SewingStitch) =
+    base_file_name(stitch) * ".tif"
+
 function image_size_units(img::TiffImages.AbstractTIFF)
     u = ifds(img)[TiffImages.RESOLUTIONUNIT].data
     if u == 2
@@ -86,13 +89,9 @@ end
 TIFF_FILES = Dict()
 
 function load_tiff_files()
-    for filename in readdir()
-        if !endswith(filename, ".tif")
-            continue
-        end
+    for stitch in values(SEWING_STITCHES)
+        filename = tiff_file_name(stitch)
         TIFF_FILES[filename] = TiffImages.load(filename)
     end
 end
 
-
-    

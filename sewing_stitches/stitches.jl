@@ -46,6 +46,13 @@ end
 Base.isless(stitch1::SewingStitch, stitch2::SewingStitch) =
     stitch1.iso_number < stitch2.iso_number
 
+function base_file_name(stitch::SewingStitch)
+    clean = replace(stitch.name,
+                    ' ' => '_',
+                    '(' => '_',
+                    ')' => '_')
+    "$(stitch.iso_number)-$clean"
+end
 
 ################################################################################
 # Includes:
