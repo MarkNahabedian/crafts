@@ -13,12 +13,23 @@ for stitch in values(SEWING_STITCHES)
     run(Cmd([BROWSER, "--headless", "--disable-gpu",
              "--print-to-pdf=$pdffile", htmlfile]);
         wait=true)
-    # sips -s format tiff "temp.pdf" --out "${file%.html}.tiff"
+    #=
+    # This command doesn't give the right sisez because sips is too smartass:
     run(Cmd(["sips", "-s", "format", "tiff",
-             "--setProperty",  "dpiWidth", 200,
-             "--setProperty",  "dpiHeight", 200,
+             "-r", "200",
+             "--resampleHeightWidth", "2000", "1600",
+             # "--setProperty",  "dpiWidth", "200",
+             # "--setProperty",  "dpiHeight", "200",
              pdffile, "--out", tiffile]);
+    wait=true)
+    =#
+    run(Cmd([ "pdftoppm", "-tiff",
+              "-r", "200",
+              "-f", "1", "-l", "1",
+              "-singlefile",
+              pdffile, base
+              ]),
         wait=true)
-    println("Wrote $tiffile")
+    println("Wrote $base.tif")
 end
 
