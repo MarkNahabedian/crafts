@@ -4,4 +4,5 @@ include("includes.jl")
 format_all_stitch_pages()
 html_to_tiff()
 
+load_tiff_files()
 

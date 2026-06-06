@@ -15,16 +15,20 @@ function image_size_units(img::TiffImages.AbstractTIFF)
     end
 end
 
+image_Xresolution(img::TiffImages.AbstractTIFF) =
+    convert(Rational{Int}, ifds(img)[TiffImages.XRESOLUTION].data) / image_size_units(img)
+
+image_Yresolution(img::TiffImages.AbstractTIFF) =
+    convert(Rational{Int}, ifds(img)[TiffImages.YRESOLUTION].data)  / image_size_units(img)
+    
 function image_width(img::TiffImages.AbstractTIFF)
     imagewidth = convert(Rational{Int}, ifds(img)[TiffImages.IMAGEWIDTH].data)
-    xresolution = convert(Rational{Int}, ifds(img)[TiffImages.XRESOLUTION].data)
-    return image_size_units(img) * imagewidth / xresolution
+    return imagewidth / image_Xresolution(img)
 end
 
 function image_height(img::TiffImages.AbstractTIFF)
     imagelength = convert(Rational{Int}, ifds(img)[TiffImages.IMAGELENGTH].data)
-    yresolution = convert(Rational{Int}, ifds(img)[TiffImages.YRESOLUTION].data)
-    return image_size_units(img) * imagelength / yresolution
+    return imagelength / image_Yresolution(img)
 end
 
 
