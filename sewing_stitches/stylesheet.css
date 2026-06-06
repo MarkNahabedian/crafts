@@ -2,22 +2,23 @@
 html, body {
     width: $(svg_inch(SHEET_WIDTH));
     height: $(svg_inch(SHEET_HEIGHT));
+    margin: 0;
+    padding: 0;
 }
 
 body {
     font-family: sans-serif;
-    margin-top: 1em;
-    margin-bottom: 1em;
-    margin-left: 1em;
-    margin-right: 1em;
+    padding-top: 1em;
+    padding-bottom: 1em;
+    padding-left: 1in;          /* gutter for binding */
+    padding-right: 1em;
     border: solid black 1px;
-    padding-left: 1in;
 }
 
 .title {
     font-size: 0.4in;
     text-align: center;
-    margin-top: 0.75in;
+    margin-top: 0.5in;
 }
 
 .thread-count {
@@ -57,6 +58,13 @@ svg .punch-hole {
     size: $(svg_inch(SHEET_WIDTH)) $(svg_inch(SHEET_HEIGHT)) portrait;
 }
 
+@page {
+    width: $(svg_inch(SHEET_WIDTH));
+    height: $(svg_inch(SHEET_HEIGHT));
+    margin: 0px; /* Removes default margins that shrink your content */
+}
+
+/*
 @media print {
     .page {
         padding: 0;
@@ -65,5 +73,6 @@ svg .punch-hole {
         margin-left: 1in;
         margin-right: 0.25in;
     }
+*/
 }
 
