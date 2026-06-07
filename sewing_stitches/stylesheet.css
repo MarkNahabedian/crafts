@@ -47,6 +47,11 @@ body {
     font-size: 0.3in;
 }
 
+svg bounding-rect {
+    stroke: none;
+    fill: none
+}
+
 svg .punch-hole {
     fill: none;
     stroke: black;
